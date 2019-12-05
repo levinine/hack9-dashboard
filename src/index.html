@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic|Material+Icons">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue-material@1.0.0-beta-11/dist/vue-material.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue-material@1.0.0-beta-11/dist/theme/default-dark.css">
+    <style>
+      html, body, #dashboard-app, .md-app, .md-app-content {
+        height: 100%;
+        max-height: 100%;
+        background: transparent !important;
+      }
+      .md-app-container {
+        background: url(http://localhost:5000/banner.jpg) no-repeat fixed center center;
+      }
+      .md-card {
+        opacity: 85%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="dashboard-app">
+      <md-app md-waterfall md-mode="fixed">
+        <md-app-toolbar class="md-primary md-large">
+          <div class="md-toolbar-row md-layout">
+            <div class="md-title md-layout-item md-size-80">Hack9 leaderboard</div>
+            <div class="md-caption md-layout-item md-size-10">
+                <div v-if="user" class="md-caption">{{ user }}</div>
+            </div>
+            <div class="md-title md-layout-item md-size-5">
+              <md-button v-if="user" @click="logout">logout</md-button>
+              <md-button v-if="!user" @click="login">login</md-button>
+            </div>
+          </div>
+        </md-app-toolbar>
+
+        <md-app-content>
+          <md-card class="md-elevation-8" style="margin-bottom: 1em;" v-for="team in teams" :class="{ 'md-primary': isMyTeam(team) }">
+              <md-card-header>
+                <div class="md-title">{{ team.name }}</div>
+                <div class="md-subhead">{{ (team.members || []).join(', ') }}</div>
+              </md-card-header>
+              
+              <md-card-content>
+                <div class="md-layout md-gutter">
+                  <div class="md-layout-item md-size-33" v-if="isMyTeam(team)">
+                    <md-field>
+                      <label>API URL</label>
+                      <md-input v-model="team.apiUrl"></md-input>
+                      <md-button @click="setApiUrl(team)"><md-icon>check</md-icon></md-button>
+                    </md-field>
+                  </div>
+                </div>
+              </md-card-content>
+
+              <md-card-actions md-alignment="right">
+                <md-button v-if="team.status==='ready'" @click="requestTest(team.id)">
+                  <md-icon>play_arrow</md-icon>
+                </md-button>
+                <md-button v-if="team.status==='scheduled'">
+                  <md-icon>av_timer</md-icon>
+                </md-button>
+                <md-button v-if="team.status==='running'">
+                  <md-progress-spinner md-mode="indeterminate" :md-diameter="30"></md-progress-spinner>
+                </md-button>
+                <md-button>{{ team.score }}</md-button>
+              </md-card-actions>
+            </md-card>
+        </md-app-content>
+      </md-app>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-material@1.0.0-beta-11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@2.2.0/build/jwt-decode.js"></script>
+
+    <script>
+
+      const token = new URLSearchParams(window.location.hash.replace('#', '')).get('id_token');
+      if (token) {
+        localStorage.setItem('token', token);
+      }
+      history.pushState('', document.title, window.location.pathname + window.location.search);
+      
+      Vue.use(VueMaterial.default);
+      Vue.http.interceptors.push(function(request) {
+        const token = localStorage.getItem('token');
+        if (token) {
+          request.headers.set('Authorization', token);
+        }
+      });
+      const cognitoUrl = 'https://hack9-2019.auth.eu-west-2.amazoncognito.com';
+      const clientId = '23g0a02nil8o3gtsmt52i69unn';
+      const appUrl = window.location.href.indexOf('localhost') !== -1 ? 'http://localhost:3000/dev' : 'https://rryr2ini4g.execute-api.us-east-1.amazonaws.com/dev';
+      const app = new Vue({
+        el: '#dashboard-app',
+        data: function () {
+          return {
+            teams: [],
+            user: this.getUser()
+          }
+        },
+        mounted: function () {
+          this.$http.get(`${appUrl}/results`).then((response, status, request) => {
+            this.teams.push(...response.body.teams);
+          });
+        },
+        methods: {
+          login: function () {
+            window.location.href = `${cognitoUrl}/oauth2/authorize?identity_provider=levi9&redirect_uri=${appUrl}&response_type=TOKEN&client_id=${clientId}&scope=openid`;
+          },
+          logout: function () {
+            localStorage.removeItem('token');
+            window.location.href = `${cognitoUrl}/logout?logout_uri=${appUrl}&client_id=${clientId}`;
+          },
+          getUser: function () {
+            const token = localStorage.getItem('token');
+            return token ? jwt_decode(token).email : null;
+          },
+          isMyTeam: function (team) {
+            return team.members && team.members.includes(this.getUser());
+          },
+          setApiUrl: function (team) {
+            this.$http.put(`${appUrl}/teams/${team.id}/apiUrl`, { apiUrl: team.apiUrl }).then((response, status, request) => {
+              console.log('apiUrl set', response);
+            });
+          },
+          requestTest: function (teamId) {
+            this.$http.post(`${appUrl}/teams/${teamId}/testRequests`, { teamId: teamId }).then((response, status, request) => {
+              console.log('testRequested', response);
+            });
+          }
+        }
+
+      });
+    </script>
+  
+  </body>
+</html>

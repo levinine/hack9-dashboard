@@ -1,0 +1,58 @@
+service:
+  name: hack9-dashboard
+
+plugins:
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+custom:
+  serverless-offline:
+    prefix: dev
+
+functions:
+  results:
+    handler: src/handler.results
+    events:
+      - http:
+          path: /results
+          method: GET
+  putApiUrl:
+    handler: src/handler.putApiUrl
+    events:
+      - http:
+          path: /teams/{teamId}/apiUrl
+          method: PUT
+          authorizer:
+            arn:  arn:aws:cognito-idp:eu-west-2:695948455538:userpool/eu-west-2_bkdNpGG7O
+  postTestRequest:
+    handler: src/handler.postTestRequest
+    events:
+      - http:
+          path: /teams/{teamId}/testRequests
+          method: POST
+          authorizer:
+            arn:  arn:aws:cognito-idp:eu-west-2:695948455538:userpool/eu-west-2_bkdNpGG7O
+  getTestRequest:
+    handler: src/handler.getTestRequest
+    events:
+      - http:
+          path: /testRequest
+          method: GET
+          request:
+            parameters:
+              querystrings:
+                cloudProvider: false
+                region: false  
+  postTestResults:
+    handler: src/handler.postTestResults
+    events:
+      - http:
+          path: /testResults
+          method: POST
+  staticContent:
+    handler: src/handler.staticContent
+    events:
+      - http: GET /
+      - http: GET /{any+}
