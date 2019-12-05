@@ -12,7 +12,7 @@
         background: transparent !important;
       }
       .md-app-container {
-        background: url(http://localhost:5000/banner.jpg) no-repeat fixed center center;
+        background: url(https://hack9-judge-thread.s3-eu-west-1.amazonaws.com/banner.jpg) no-repeat fixed center center;
       }
       .md-card {
         opacity: 85%;
@@ -22,7 +22,7 @@
   <body>
     <div id="dashboard-app">
       <md-app md-waterfall md-mode="fixed">
-        <md-app-toolbar class="md-primary md-large">
+        <md-app-toolbar class="">
           <div class="md-toolbar-row md-layout">
             <div class="md-title md-layout-item md-size-80">Hack9 leaderboard</div>
             <div class="md-caption md-layout-item md-size-10">
@@ -36,35 +36,50 @@
         </md-app-toolbar>
 
         <md-app-content>
-          <md-card class="md-elevation-8" style="margin-bottom: 1em;" v-for="team in teams" :class="{ 'md-primary': isMyTeam(team) }">
-              <md-card-header>
+          <md-card class="md-layout md-elevation-8" style="margin-bottom: 1em;" v-for="team in teams" :class="{ 'md-primary': isMyTeam(team) }">
+              <md-card-header class="md-layout-item">
                 <div class="md-title">{{ team.name }}</div>
                 <div class="md-subhead">{{ (team.members || []).join(', ') }}</div>
               </md-card-header>
               
-              <md-card-content>
+              <md-card-content class="md-layout-item md-size-100">
                 <div class="md-layout md-gutter">
                   <div class="md-layout-item md-size-33" v-if="isMyTeam(team)">
-                    <md-field>
-                      <label>API URL</label>
-                      <md-input v-model="team.apiUrl"></md-input>
-                      <md-button @click="setApiUrl(team)"><md-icon>check</md-icon></md-button>
-                    </md-field>
+                    
                   </div>
                 </div>
               </md-card-content>
 
-              <md-card-actions md-alignment="right">
+              <md-card-actions class="md-layout-item md-size-40" md-alignment="left">
+                <md-button v-show="isMyTeam(team) || iAmAdmin()" @click="Vue.set(team, 'editApiUrl', !team.editApiUrl)">
+                  <md-icon class="md-size-2x">settings_applications</md-icon>
+                </md-button>
+                <md-button v-show="team.editApiUrl" @click="setApiUrl(team)">
+                  <md-icon class="md-size-2x">check</md-icon>
+                </md-button>
+                <md-field v-show="team.editApiUrl">
+                  <label>API URL</label>
+                  <md-input v-model="team.apiUrl"></md-input>
+                </md-field>
+              </md-card-actions>
+
+              <md-card-actions class="md-layout-item md-size-40" md-alignment="left"></md-card-actions>
+
+              <md-card-actions class="md-layout-item md-size-20" md-alignment="right">
                 <md-button v-if="team.status==='ready'" @click="requestTest(team.id)">
-                  <md-icon>play_arrow</md-icon>
+                  <md-icon class="md-size-2x">play_arrow</md-icon>
                 </md-button>
                 <md-button v-if="team.status==='scheduled'">
-                  <md-icon>av_timer</md-icon>
+                  <md-icon class="md-size-2x">av_timer</md-icon>
                 </md-button>
                 <md-button v-if="team.status==='running'">
                   <md-progress-spinner md-mode="indeterminate" :md-diameter="30"></md-progress-spinner>
                 </md-button>
-                <md-button>{{ team.score }}</md-button>
+                <md-field class="md-layout-item md-size-20">
+                  <label>SCORE</label>
+                  <md-input v-model="team.score" readonly></md-input>
+                </md-field>
+                <!-- <md-button class="md-size-2x">{{ team.score }}</md-button> -->
               </md-card-actions>
             </md-card>
         </md-app-content>
@@ -91,15 +106,16 @@
           request.headers.set('Authorization', token);
         }
       });
-      const cognitoUrl = 'https://hack9-2019.auth.eu-west-2.amazoncognito.com';
-      const clientId = '23g0a02nil8o3gtsmt52i69unn';
-      const appUrl = window.location.href.indexOf('localhost') !== -1 ? 'http://localhost:3000/dev' : 'https://rryr2ini4g.execute-api.us-east-1.amazonaws.com/dev';
+      const cognitoUrl = 'https://hack9-2019.auth.eu-west-1.amazoncognito.com';
+      const clientId = '51cehjbhil3ld480aca5as2lr5';
+      const appUrl = window.location.href.indexOf('localhost') !== -1 ? 'http://localhost:3000/dev' : 'https://5lu3e68nw8.execute-api.eu-west-1.amazonaws.com/dev';
       const app = new Vue({
         el: '#dashboard-app',
         data: function () {
           return {
             teams: [],
-            user: this.getUser()
+            user: this.getUser(),
+            editApiUrl: false
           }
         },
         mounted: function () {
@@ -118,6 +134,10 @@
           getUser: function () {
             const token = localStorage.getItem('token');
             return token ? jwt_decode(token).email : null;
+          },
+          iAmAdmin: function () {
+            const token = localStorage.getItem('token');
+            return token && jwt_decode(token).role === 'admin';
           },
           isMyTeam: function (team) {
             return team.members && team.members.includes(this.getUser());
