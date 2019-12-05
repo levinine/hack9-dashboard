@@ -6,6 +6,7 @@ plugins:
 
 provider:
   name: aws
+  region: eu-west-1
   runtime: nodejs10.x
 custom:
   serverless-offline:
@@ -25,7 +26,7 @@ functions:
           path: /teams/{teamId}/apiUrl
           method: PUT
           authorizer:
-            arn:  arn:aws:cognito-idp:eu-west-2:695948455538:userpool/eu-west-2_bkdNpGG7O
+            arn:   arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
   postTestRequest:
     handler: src/handler.postTestRequest
     events:
@@ -33,7 +34,7 @@ functions:
           path: /teams/{teamId}/testRequests
           method: POST
           authorizer:
-            arn:  arn:aws:cognito-idp:eu-west-2:695948455538:userpool/eu-west-2_bkdNpGG7O
+            arn:   arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
   getTestRequest:
     handler: src/handler.getTestRequest
     events:
@@ -56,3 +57,10 @@ functions:
     events:
       - http: GET /
       - http: GET /{any+}
+  preTokenGeneration:
+    handler: src/handler.preTokenGeneration
+    events:
+      - cognitoUserPool:
+          pool: hack9-2019
+          trigger: PreTokenGeneration
+          existing: true
