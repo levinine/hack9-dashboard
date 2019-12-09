@@ -13,7 +13,8 @@ connection.connect();
 const query = util.promisify(connection.query).bind(connection);
 // connection.end();
 
-exports.staticContent = async (_event, _context) => {
+exports.staticContent = async (_event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
   let content = fs.readFileSync('src/index.html', { encoding: 'utf8' });
   return {
     statusCode: 200,
@@ -32,7 +33,8 @@ const checkAccess = async (event) => {
   console.log(`Check access: user ${JSON.stringify(user)}; email ${email}; teamId ${teamId}`);
   return user && (user.type === 'admin' || user.team_id == teamId);
 }
-exports.putApiUrl = async (event) => {
+exports.putApiUrl = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
   if (await checkAccess(event)) {
     await teams.updateApiUrl(event.pathParameters.teamId, JSON.parse(event.body).apiUrl);
     return {
@@ -45,7 +47,8 @@ exports.putApiUrl = async (event) => {
   }
 }
 
-exports.postTestRequest = async (event, _context) => {
+exports.postTestRequest = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
   if (await checkAccess(event)) {
     await testExecutions.create(event.pathParameters.teamId);
     await teams.updateStatus(event.pathParameters.teamId, 'scheduled');
@@ -60,7 +63,8 @@ exports.postTestRequest = async (event, _context) => {
   }
 }
 
-exports.getTestRequest = async (event, _context) => {
+exports.getTestRequest = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
   const cloudProvider = event.queryStringParameters && event.queryStringParameters.cloudProvider || 'aws';
   const region = event.queryStringParameters && event.queryStringParameters.region || 'eu-west-1';
   const testExecution = await testExecutions.acquire(cloudProvider, region);
@@ -76,7 +80,8 @@ exports.getTestRequest = async (event, _context) => {
   }
 }
 
-exports.postTestResults = async (event, _context) => {
+exports.postTestResults = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
   const body = JSON.parse(event.body);
   const testExecutionCode = body.id;
   const results = body.data;
@@ -90,7 +95,8 @@ exports.postTestResults = async (event, _context) => {
   };
 }
 
-exports.results = async (_event, _context) => {
+exports.results = async (_event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
   return {
     statusCode: 200,
     body: JSON.stringify({
@@ -98,6 +104,18 @@ exports.results = async (_event, _context) => {
     })
   };
 }
+
+exports.preTokenGeneration = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+  // console.log(event);
+  try {
+    const user = await users.getByEmail(event.request.userAttributes.email);
+    event.response = { claimsOverrideDetails: { claimsToAddOrOverride: { role: user.type } } };
+    context.done(null, event);
+  } catch (error) {
+    context.fail(error);
+  }
+};
 
 const users = {
   getByEmail: (email) => query(`SELECT * FROM user WHERE email = ? `, [email]).then(users => users.length === 1 ? users[0] : null)

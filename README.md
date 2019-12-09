@@ -20,3 +20,7 @@ sudo docker run --name mysql-hack9 -p 3306:3306 \
 Run the application:
 
 `sls offline`
+
+## Deploy to AWS
+
+`sls deploy`
