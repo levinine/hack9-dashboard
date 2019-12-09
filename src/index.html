@@ -12,11 +12,40 @@
         background: transparent !important;
       }
       .md-app-container {
-        background: url(https://hack9-judge-thread.s3-eu-west-1.amazonaws.com/banner.jpg) no-repeat fixed center center;
+        background: url(https://hack9-judge-thread.s3-eu-west-1.amazonaws.com/banner.jpg) no-repeat fixed right top/cover;
       }
       .md-card {
         opacity: 85%;
+        margin-bottom: 1em;
       }
+      .countdown ul {
+        padding: 0 10%;
+      }
+      .countdown li {
+        display: inline-block;
+        width: 24%;
+        font-size: 1.8em;
+        list-style-type: none;
+        padding: 2em 2em 1em;
+        text-transform: uppercase;
+        text-align: center;
+      }
+      @media only screen and (max-width: 1300px) {
+        .countdown ul {
+          padding: 0;
+        }
+        .countdown li {
+          width: 100%;
+        }
+      }
+
+      .countdown li span {
+        display: block;
+        font-size: 6.5rem;
+        margin-bottom: 0.3em;
+        text-align: center;
+      }
+
     </style>
   </head>
   <body>
@@ -36,7 +65,17 @@
         </md-app-toolbar>
 
         <md-app-content>
-          <md-card class="md-layout md-elevation-8" style="margin-bottom: 1em;" v-for="team in teams" :class="{ 'md-primary': isMyTeam(team) }">
+          <md-card v-if="timeLeft.seconds!==''">
+            <md-card-header class="md-title md-middle countdown">
+              <ul>
+                <li><span>{{timeLeft.days}}</span>days</li>
+                <li><span>{{timeLeft.hours}}</span>Hours</li>
+                <li><span>{{timeLeft.minutes}}</span>Minutes</li>
+                <li><span>{{timeLeft.seconds}}</span>Seconds</li>
+              </ul>
+            </md-card-header>
+          </md-card>
+          <md-card class="md-layout md-elevation-8" v-for="team in teams" :class="{ 'md-primary': isMyTeam(team) }">
               <md-card-header class="md-layout-item">
                 <div class="md-title">{{ team.name }}</div>
                 <div class="md-subhead">{{ (team.members || []).join(', ') }}</div>
@@ -63,9 +102,10 @@
                 </md-field>
               </md-card-actions>
 
-              <md-card-actions class="md-layout-item md-size-40" md-alignment="left"></md-card-actions>
+              <md-card-actions class="md-layout-item md-size-38" md-alignment="left"></md-card-actions>
 
               <md-card-actions class="md-layout-item md-size-20" md-alignment="right">
+                <label>SCORE {{team.score}}</label>
                 <md-button v-if="team.status==='ready'" @click="requestTest(team.id)">
                   <md-icon class="md-size-2x">play_arrow</md-icon>
                 </md-button>
@@ -75,11 +115,6 @@
                 <md-button v-if="team.status==='running'">
                   <md-progress-spinner md-mode="indeterminate" :md-diameter="30"></md-progress-spinner>
                 </md-button>
-                <md-field class="md-layout-item md-size-20">
-                  <label>SCORE</label>
-                  <md-input v-model="team.score" readonly></md-input>
-                </md-field>
-                <!-- <md-button class="md-size-2x">{{ team.score }}</md-button> -->
               </md-card-actions>
             </md-card>
         </md-app-content>
@@ -115,13 +150,21 @@
           return {
             teams: [],
             user: this.getUser(),
-            editApiUrl: false
+            editApiUrl: false,
+            timeLeft: {
+              days: '',
+              hours: '',
+              minutes: '',
+              seconds: ''
+            }
           }
         },
         mounted: function () {
           this.$http.get(`${appUrl}/results`).then((response, status, request) => {
             this.teams.push(...response.body.teams);
           });
+          this.updateTimeLeft();
+          setInterval(this.updateTimeLeft, 1000);
         },
         methods: {
           login: function () {
@@ -151,6 +194,19 @@
             this.$http.post(`${appUrl}/teams/${teamId}/testRequests`, { teamId: teamId }).then((response, status, request) => {
               console.log('testRequested', response);
             });
+          },
+          updateTimeLeft: function () {
+            const second = 1000,
+                  minute = second * 60,
+                  hour = minute * 60,
+                  day = hour * 24;
+            let distance = new Date('Dec 13, 2019 12:00:00').getTime() - new Date().getTime();
+            this.timeLeft = {
+              days: Math.floor(distance / (day)),
+              hours: Math.floor((distance % (day)) / (hour)),
+              minutes: Math.floor((distance % (hour)) / (minute)),
+              seconds: Math.floor((distance % (minute)) / second)
+            }
           }
         }
 
