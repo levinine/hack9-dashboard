@@ -18,6 +18,9 @@
         opacity: 85%;
         margin-bottom: 1em;
       }
+      .team-list-move {
+        transition: transform 1s;
+      }
       .countdown ul {
         padding: 0 10%;
       }
@@ -75,7 +78,8 @@
               </ul>
             </md-card-header>
           </md-card>
-          <md-card class="md-layout md-elevation-8" v-for="team in teams" :class="{ 'md-primary': isMyTeam(team) }">
+          <transition-group name="team-list" tag="div">
+            <md-card class="md-layout md-elevation-8" v-for="team in teams" v-bind:key="team.id" :class="{ 'md-primary': isMyTeam(team) }">
               <md-card-header class="md-layout-item">
                 <div class="md-title">{{ team.name }}</div>
                 <div class="md-subhead">{{ (team.members || []).join(', ') }}</div>
@@ -117,6 +121,7 @@
                 </md-button>
               </md-card-actions>
             </md-card>
+          </transition-group>
         </md-app-content>
       </md-app>
     </div>
@@ -160,11 +165,10 @@
           }
         },
         mounted: function () {
-          this.$http.get(`${appUrl}/results`).then((response, status, request) => {
-            this.teams.push(...response.body.teams);
-          });
+          this.loadResults();
           this.updateTimeLeft();
           setInterval(this.updateTimeLeft, 1000);
+          setInterval(this.loadResults, 30000);
         },
         methods: {
           login: function () {
@@ -177,6 +181,12 @@
           getUser: function () {
             const token = localStorage.getItem('token');
             return token ? jwt_decode(token).email : null;
+          },
+          loadResults: function () {
+            this.$http.get(`${appUrl}/results`).then((response, status, request) => {
+              this.teams = response.body.teams;
+              // this.teams.push(...response.body.teams);
+            });
           },
           iAmAdmin: function () {
             const token = localStorage.getItem('token');
@@ -193,6 +203,7 @@
           requestTest: function (teamId) {
             this.$http.post(`${appUrl}/teams/${teamId}/testRequests`, { teamId: teamId }).then((response, status, request) => {
               console.log('testRequested', response);
+              this.loadResults();
             });
           },
           updateTimeLeft: function () {

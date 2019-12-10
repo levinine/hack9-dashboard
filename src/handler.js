@@ -10,6 +10,7 @@ const connection = mysql.createConnection({
   database: process.env.DB_DATABASE
 });
 connection.connect();
+// TODO handle connection in faulty state
 const query = util.promisify(connection.query).bind(connection);
 // connection.end();
 
@@ -107,7 +108,6 @@ exports.results = async (_event, context) => {
 
 exports.preTokenGeneration = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
-  // console.log(event);
   try {
     const user = await users.getByEmail(event.request.userAttributes.email);
     event.response = { claimsOverrideDetails: { claimsToAddOrOverride: { role: user.type } } };
@@ -124,7 +124,8 @@ const teams = {
   getAll: () => query(`SELECT t.id AS id, t.name AS name, t.score AS score, status, GROUP_CONCAT(u.email SEPARATOR ",") AS members \
                        FROM team t \
                        LEFT JOIN user u ON t.id = u.team_id \
-                       GROUP BY t.id, status`).then(teams => {
+                       GROUP BY t.id, status \
+                       ORDER BY t.score DESC, t.id ASC`).then(teams => {
                          teams.forEach(team => {
                            team.members = team.members ? team.members.split(',') : [];
                          });
