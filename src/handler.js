@@ -4,10 +4,10 @@ const mysql = require('mysql');
 const crypto = require('crypto');
 
 const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'hack9',
-  password: 'hack9-2019',
-  database: 'hack9-judge'
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE
 });
 connection.connect();
 const query = util.promisify(connection.query).bind(connection);
