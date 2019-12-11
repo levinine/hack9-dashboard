@@ -3,15 +3,24 @@ const util = require('util');
 const mysql = require('mysql');
 const crypto = require('crypto');
 
-const connection = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE
-});
-connection.connect();
-// TODO handle connection in faulty state
-const query = util.promisify(connection.query).bind(connection);
+const createConnection = function () {
+  const connection = mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE
+  });
+  connection.connect();
+  return connection;
+}
+const connection = createConnection();
+const query = function () {
+  try {
+    return util.promisify(connection.query).bind(connection)(...arguments);
+  } catch (e) {
+    connection = createConnection();
+  }
+}
 // connection.end();
 
 exports.staticContent = async (_event, context) => {
