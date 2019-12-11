@@ -27,7 +27,7 @@ INSERT INTO `team` VALUES
 (26,'Season Salad',NULL,0.000,'azure','West US 2','ready'),
 (27,'JustAnotherTeam',NULL,0.000,'aws','eu-west-1','ready'),
 (28,'hAPI9',NULL,0.000,'aws','eu-west-1','ready'),
-(29,'noname again?',NULL,0.000,'aws','eu-west-1','ready'),
+(29,'noname',NULL,0.000,'aws','eu-west-1','ready'),
 (30,'Mix & Fix',NULL,0.000,'azure','West US 2','ready'),
 (31,'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS',NULL,0.000,'aws','eu-west-1','ready'),
 (32,'Frontpage',NULL,0.000,'azure','West US 2','ready'),
