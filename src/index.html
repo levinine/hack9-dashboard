@@ -146,6 +146,12 @@
         if (token) {
           request.headers.set('Authorization', token);
         }
+        return function(response) {
+          if (response.status === 401) {
+            localStorage.removeItem('token');
+            app.$data.user = null;
+          }
+        };
       });
       const cognitoUrl = 'https://hack9-2019.auth.eu-west-1.amazoncognito.com';
       const clientId = '51cehjbhil3ld480aca5as2lr5';
