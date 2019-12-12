@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
   <head>
+    <title>Judge Thread</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic|Material+Icons">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue-material@1.0.0-beta-11/dist/vue-material.min.css">
@@ -148,7 +149,7 @@
       });
       const cognitoUrl = 'https://hack9-2019.auth.eu-west-1.amazoncognito.com';
       const clientId = '51cehjbhil3ld480aca5as2lr5';
-      const appUrl = window.location.href.indexOf('localhost') !== -1 ? 'http://localhost:3000/dev' : 'https://5lu3e68nw8.execute-api.eu-west-1.amazonaws.com/dev';
+      const appUrl = window.location.href.replace(/\/$/,'');
       const app = new Vue({
         el: '#dashboard-app',
         data: function () {
