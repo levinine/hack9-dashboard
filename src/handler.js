@@ -1,25 +1,37 @@
 const fs = require('fs');
-const util = require('util');
 const mysql = require('mysql');
 const crypto = require('crypto');
 
-const createConnection = function () {
-  const connection = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE
-  });
-  connection.connect();
+let connection = null;
+const getConnection = function () {
+  if (connection == null) {
+    connection = mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE
+    });
+  }
   return connection;
 }
-const connection = createConnection();
-const query = function () {
-  try {
-    return util.promisify(connection.query).bind(connection)(...arguments);
-  } catch (e) {
-    connection = createConnection();
-  }
+const query = function (sql, args) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      getConnection().query(sql, args, (error, rows) => {
+        if (error) {
+          conenction = null;
+          console.error('SQL query failed', sql, args, error);
+          reject(error);
+        } else {
+          resolve(rows);
+        }
+      });
+    } catch (error) {
+      connection = null;
+      console.log('Error with db query', error);
+      reject(error);
+    }
+  });
 }
 // connection.end();
 
