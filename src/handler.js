@@ -1,16 +1,38 @@
 const fs = require('fs');
-const util = require('util');
 const mysql = require('mysql');
 const crypto = require('crypto');
 
-const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'hack9',
-  password: 'hack9-2019',
-  database: 'hack9-judge'
-});
-connection.connect();
-const query = util.promisify(connection.query).bind(connection);
+let connection = null;
+const getConnection = function () {
+  if (connection == null) {
+    connection = mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE
+    });
+  }
+  return connection;
+}
+const query = function (sql, args) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      getConnection().query(sql, args, (error, rows) => {
+        if (error) {
+          conenction = null;
+          console.error('SQL query failed', sql, args, error);
+          reject(error);
+        } else {
+          resolve(rows);
+        }
+      });
+    } catch (error) {
+      connection = null;
+      console.log('Error with db query', error);
+      reject(error);
+    }
+  });
+}
 // connection.end();
 
 exports.staticContent = async (_event, context) => {
@@ -107,7 +129,6 @@ exports.results = async (_event, context) => {
 
 exports.preTokenGeneration = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
-  // console.log(event);
   try {
     const user = await users.getByEmail(event.request.userAttributes.email);
     event.response = { claimsOverrideDetails: { claimsToAddOrOverride: { role: user.type } } };
@@ -124,7 +145,8 @@ const teams = {
   getAll: () => query(`SELECT t.id AS id, t.name AS name, t.score AS score, status, GROUP_CONCAT(u.email SEPARATOR ",") AS members \
                        FROM team t \
                        LEFT JOIN user u ON t.id = u.team_id \
-                       GROUP BY t.id, status`).then(teams => {
+                       GROUP BY t.id, status \
+                       ORDER BY t.score DESC, t.id ASC`).then(teams => {
                          teams.forEach(team => {
                            team.members = team.members ? team.members.split(',') : [];
                          });
