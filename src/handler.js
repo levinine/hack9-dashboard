@@ -55,6 +55,21 @@ const checkAccess = async (event) => {
   console.log(`Check access: user ${JSON.stringify(user)}; email ${email}; teamId ${teamId}`);
   return user && (user.type === 'admin' || user.team_id == teamId);
 }
+exports.getLatestExecution = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+  if (await checkAccess(event)) {
+    const execution = await testExecutions.getLatestExecution(event.pathParameters.teamId);
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ execution })
+    }
+  } else {
+    return {
+      statusCode: 403
+    }
+  }
+}
+
 exports.getApiUrl = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
   if (await checkAccess(event)) {
@@ -194,7 +209,9 @@ exports.calculateScores = async () => {
     });
   });
 
-  await teams.clearScores();
+  // console.log('clear scores');
+  // await teams.clearScores();
+
   executions.forEach(async team => {
     loadTests.forEach(test => {
       if (team.results[test.name].success) {
@@ -202,6 +219,7 @@ exports.calculateScores = async () => {
       }
     });
     team.score = functionalTests.concat(loadTests).reduce((total, test) => total + team.results[test.name].score, 0);
+    console.log(`update ${team.team_id} with $score`);
     await teams.updateScore(team.team_id, team.score);
   });
   console.log(JSON.stringify(loadTests));
@@ -252,5 +270,7 @@ const testExecutions = {
   },
   getByCode: (code) => query(`SELECT * FROM test_execution WHERE code = ?`, [code]).then(tes => tes.length === 1 ? tes[0] : null),
   saveResults: (code, results) => query(`UPDATE test_execution SET status = 'finished', results = ? WHERE code = ?`, [results, code]),
-  getLatestExecutions: () => query(`SELECT team_id, results FROM test_execution WHERE id IN (SELECT MAX(id) AS id FROM test_execution WHERE status = 'finished' GROUP BY team_id)`)
+  getLatestExecutions: () => query(`SELECT team_id, results FROM test_execution WHERE id IN (SELECT MAX(id) AS id FROM test_execution WHERE status = 'finished' GROUP BY team_id)`),
+  getLatestExecution: (teamId) => query(`SELECT results FROM test_execution WHERE team_id = ? AND id IN (SELECT MAX(id) AS id FROM test_execution WHERE status = 'finished' GROUP BY team_id)`, [teamId])
+    .then(results => results.length === 1 ? results[0].results : null)
 }

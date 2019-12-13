@@ -88,7 +88,7 @@
               
               <md-card-content class="md-layout-item md-size-100">
                 <div class="md-layout md-gutter">
-                  <div class="md-layout-item md-size-33" v-if="isMyTeam(team)">
+                  <div class="md-layout-item md-size-33" v-if="team.showLatestExecution" v-html="team.latestExecution">
                     
                   </div>
                 </div>
@@ -110,7 +110,7 @@
               <md-card-actions class="md-layout-item md-size-38" md-alignment="left"></md-card-actions>
 
               <md-card-actions class="md-layout-item md-size-20" md-alignment="right">
-                <label>SCORE {{team.score}}</label>
+                <label @click="getLatestExecution(team)">SCORE {{team.score}}</label>
                 <md-button v-if="team.status==='ready'" @click="requestTest(team.id)">
                   <md-icon class="md-size-2x">play_arrow</md-icon>
                 </md-button>
@@ -191,7 +191,18 @@
           },
           loadResults: function () {
             this.$http.get(`${appUrl}/results`).then((response, status, request) => {
-              this.teams = response.body.teams;
+              response.body.teams.forEach(t1 => {
+                try {
+                  const team = this.teams.find(t2 => t2.id === t1.id);
+                  if (team == null) {
+                    this.teams.push(t1);
+                  } else {
+                    Object.assign(team, t1);
+                  }
+                } catch (e) {}
+              });
+              this.teams.sort((t1,t2) => t1.score < t2.score ? 1 : -1);
+              // this.teams = response.body.teams;
               // this.teams.push(...response.body.teams);
             });
           },
@@ -201,6 +212,19 @@
           },
           isMyTeam: function (team) {
             return team.members && team.members.includes(this.getUser());
+          },
+          getLatestExecution: function (team) {
+            if (team.showLatestExecution) {
+              team.showLatestExecution = false;
+            } else {
+              if (this.iAmAdmin() || this.isMyTeam(team)) {
+                this.$http.get(`${appUrl}/teams/${team.id}/executions/latest`).then((response, status, request) => {
+                  Vue.set(team, 'showLatestExecution', true);
+                  Vue.set(team, 'latestExecution', response.body.execution);
+                  console.log('latest execution', response);
+                });
+              }
+            }
           },
           apiUrlSettings: function (team) {
             if (team.editApiUrl) {
