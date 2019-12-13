@@ -171,6 +171,7 @@ exports.calculateScores = async () => {
     });
   });
 
+  await teams.clearScores();
   executions.forEach(async team => {
     loadTests.forEach(test => {
       team.results[test.name].score = test.weight * (test.maxScore - team.results[test.name].score) / test.maxScore;
@@ -199,6 +200,7 @@ const teams = {
   findByEmail: (email) => teams.getAll().then(teams => teams.find(team => team.members && team.members.includes(email))),
   updateStatus: (teamId, status) => query(`UPDATE team SET status = ? WHERE id = ?`, [status, teamId]),
   updateApiUrl: (teamId, apiUrl) => query(`UPDATE team SET api_url = ? WHERE id = ?`, [apiUrl, teamId]),
+  clearScores: () => query(`UPDATE team SET score = score_diversity + score_costs`),
   updateScore: (teamId, score) => query(`UPDATE team SET score = ? + score_diversity + score_costs WHERE id = ?`, [score, teamId])
 }
 
