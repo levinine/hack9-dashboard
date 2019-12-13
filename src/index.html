@@ -95,7 +95,7 @@
               </md-card-content>
 
               <md-card-actions class="md-layout-item md-size-40" md-alignment="left">
-                <md-button v-show="isMyTeam(team) || iAmAdmin()" @click="Vue.set(team, 'editApiUrl', !team.editApiUrl)">
+                <md-button v-show="isMyTeam(team) || iAmAdmin()" @click="apiUrlSettings(team)">
                   <md-icon class="md-size-2x">settings_applications</md-icon>
                 </md-button>
                 <md-button v-show="team.editApiUrl" @click="setApiUrl(team)">
@@ -201,6 +201,19 @@
           },
           isMyTeam: function (team) {
             return team.members && team.members.includes(this.getUser());
+          },
+          apiUrlSettings: function (team) {
+            if (team.editApiUrl) {
+              team.editApiUrl = false;
+            } else {
+              if (this.iAmAdmin() || this.isMyTeam(team)) {
+                this.$http.get(`${appUrl}/teams/${team.id}/apiUrl`).then((response, status, request) => {
+                  Vue.set(team, 'editApiUrl', true);
+                  Vue.set(team, 'apiUrl', response.body.apiUrl);
+                  console.log('apiUrl get', response);
+                });
+              }
+            }
           },
           setApiUrl: function (team) {
             this.$http.put(`${appUrl}/teams/${team.id}/apiUrl`, { apiUrl: team.apiUrl }).then((response, status, request) => {

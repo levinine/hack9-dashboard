@@ -55,6 +55,20 @@ const checkAccess = async (event) => {
   console.log(`Check access: user ${JSON.stringify(user)}; email ${email}; teamId ${teamId}`);
   return user && (user.type === 'admin' || user.team_id == teamId);
 }
+exports.getApiUrl = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+  if (await checkAccess(event)) {
+    const apiUrl = await teams.getApiUrl(event.pathParameters.teamId);
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ apiUrl })
+    }
+  } else {
+    return {
+      statusCode: 403
+    }
+  }
+}
 exports.putApiUrl = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
   if (await checkAccess(event)) {
@@ -153,20 +167,29 @@ const loadTests = [
 ];
 exports.calculateScores = async () => {
   const executions = await testExecutions.getLatestExecutions();
-  loadTests.forEach(test => { test.maxScore = 0; });
+  loadTests.forEach(test => { test.maxScore = 0; test.minScore = 100000; });
   // console.log(JSON.stringify(teams));
   executions.forEach(team => {
     console.log(`process team ${team.team_id}`);
     team.results = JSON.parse(team.results);
     functionalTests.forEach(test => {
-      team.results[test.name].score *= test.weight;
+      if (team.results[test.name].success) {
+        team.results[test.name].score *= test.weight;
+      } else {
+        team.results[test.name].score = 0
+      }
       delete team.results[test.name].output;
     });
     loadTests.forEach(test => {
-      let score = team.results[test.name].score;
-      const msIndex = score.indexOf('ms');
-      team.results[test.name].score = (msIndex !== -1) ? +score.substring(0, msIndex) : +score.substring(0, score.length - 1) * 1000;
-      test.maxScore = team.results[test.name].score > test.maxScore ? team.results[test.name].score : test.maxScore;
+      if (team.results[test.name].success) {
+        const score = team.results[test.name].score;
+        const msIndex = score.indexOf('ms');
+        team.results[test.name].score = (msIndex !== -1) ? +score.substring(0, msIndex) : +score.substring(0, score.length - 1) * 1000;
+        test.maxScore = team.results[test.name].score > test.maxScore ? team.results[test.name].score : test.maxScore;
+        test.minScore = team.results[test.name].score < test.minScore ? team.results[test.name].score : test.minScore;
+      } else {
+        team.results[test.name].score = 0;
+      }
       delete team.results[test.name].output;
     });
   });
@@ -174,7 +197,9 @@ exports.calculateScores = async () => {
   await teams.clearScores();
   executions.forEach(async team => {
     loadTests.forEach(test => {
-      team.results[test.name].score = test.weight * (test.maxScore - team.results[test.name].score) / test.maxScore;
+      if (team.results[test.name].success) {
+        team.results[test.name].score = test.weight * test.minScore / team.results[test.name].score;
+      }
     });
     team.score = functionalTests.concat(loadTests).reduce((total, test) => total + team.results[test.name].score, 0);
     await teams.updateScore(team.team_id, team.score);
@@ -199,6 +224,7 @@ const teams = {
                        }),
   findByEmail: (email) => teams.getAll().then(teams => teams.find(team => team.members && team.members.includes(email))),
   updateStatus: (teamId, status) => query(`UPDATE team SET status = ? WHERE id = ?`, [status, teamId]),
+  getApiUrl: (teamId) => query(`SELECT api_url FROM team WHERE id = ?`, [teamId]).then(apiUrls => apiUrls.length === 1 ? apiUrls[0].api_url : null),
   updateApiUrl: (teamId, apiUrl) => query(`UPDATE team SET api_url = ? WHERE id = ?`, [apiUrl, teamId]),
   clearScores: () => query(`UPDATE team SET score = score_diversity + score_costs`),
   updateScore: (teamId, score) => query(`UPDATE team SET score = ? + score_diversity + score_costs WHERE id = ?`, [score, teamId])

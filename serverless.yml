@@ -37,6 +37,14 @@ functions:
       - http:
           path: /results
           method: GET
+  getApiUrl:
+    handler: src/handler.getApiUrl
+    events:
+      - http:
+          path: /teams/{teamId}/apiUrl
+          method: GET
+          authorizer:
+            arn:   arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
   putApiUrl:
     handler: src/handler.putApiUrl
     events:
