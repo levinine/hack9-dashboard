@@ -69,7 +69,7 @@
         </md-app-toolbar>
 
         <md-app-content>
-          <md-card v-if="timeLeft.seconds!==''">
+          <!-- <md-card v-if="timeLeft.seconds!==''">
             <md-card-header class="md-title md-middle countdown">
               <ul>
                 <li><span>{{timeLeft.days}}</span>days</li>
@@ -78,7 +78,7 @@
                 <li><span>{{timeLeft.seconds}}</span>Seconds</li>
               </ul>
             </md-card-header>
-          </md-card>
+          </md-card> -->
           <transition-group name="team-list" tag="div">
             <md-card class="md-layout md-elevation-8" v-for="team in teams" v-bind:key="team.id" :class="{ 'md-primary': isMyTeam(team) }">
               <md-card-header class="md-layout-item">
@@ -173,9 +173,9 @@
         },
         mounted: function () {
           this.loadResults();
-          this.updateTimeLeft();
-          setInterval(this.updateTimeLeft, 1000);
           setInterval(this.loadResults, 30000);
+          // this.updateTimeLeft();
+          // setInterval(this.updateTimeLeft, 1000);
         },
         methods: {
           login: function () {

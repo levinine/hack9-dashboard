@@ -6,17 +6,29 @@ plugins:
 
 provider:
   name: aws
+  stage: ${opt:stage, "test"}
   region: eu-west-1
   runtime: nodejs10.x
   environment:
-    DB_HOST: ${ssm:/hack9-dashboard/host}
-    DB_USER: ${ssm:/hack9-dashboard/user}
-    DB_PASSWORD: ${ssm:/hack9-dashboard/password}
-    DB_DATABASE: ${ssm:/hack9-dashboard/database}
+    DB_HOST: ${self:custom.config.${self:provider.stage}.dbHost}
+    DB_USER: ${self:custom.config.${self:provider.stage}.dbUser}
+    DB_PASSWORD: ${self:custom.config.${self:provider.stage}.dbPassword}
+    DB_DATABASE: ${self:custom.config.${self:provider.stage}.dbDatabase}
 
 custom:
   serverless-offline:
     prefix: dev
+  config:
+    dev:
+      dbHost: ${ssm:/hack9-dashboard-prod/host}
+      dbUser: ${ssm:/hack9-dashboard-prod/user}
+      dbPassword: ${ssm:/hack9-dashboard-prod/password}
+      dbDatabase: ${ssm:/hack9-dashboard-prod/database}
+    test:
+      dbHost: ${ssm:/hack9-dashboard/host}
+      dbUser: ${ssm:/hack9-dashboard/user}
+      dbPassword: ${ssm:/hack9-dashboard/password}
+      dbDatabase: ${ssm:/hack9-dashboard/database}
 
 functions:
   results:
