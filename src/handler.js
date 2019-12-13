@@ -185,27 +185,35 @@ exports.calculateScores = async () => {
   loadTests.forEach(test => { test.maxScore = 0; test.minScore = 100000; });
   // console.log(JSON.stringify(teams));
   executions.forEach(team => {
-    console.log(`process team ${team.team_id}`);
+    // console.log(`process team ${team.team_id}`);
     team.results = JSON.parse(team.results);
     functionalTests.forEach(test => {
+      delete team.results[test.name].output;
+      // console.log(`${test.name} ${JSON.stringify(team.results[test.name])}`)
       if (team.results[test.name].success) {
         team.results[test.name].score *= test.weight;
       } else {
         team.results[test.name].score = 0
       }
-      delete team.results[test.name].output;
     });
     loadTests.forEach(test => {
+      delete team.results[test.name].output;
+      // console.log(`${test.name} ${JSON.stringify(team.results[test.name])}`)
       if (team.results[test.name].success) {
-        const score = team.results[test.name].score;
-        const msIndex = score.indexOf('ms');
-        team.results[test.name].score = (msIndex !== -1) ? +score.substring(0, msIndex) : +score.substring(0, score.length - 1) * 1000;
-        test.maxScore = team.results[test.name].score > test.maxScore ? team.results[test.name].score : test.maxScore;
-        test.minScore = team.results[test.name].score < test.minScore ? team.results[test.name].score : test.minScore;
+        try {
+          const score = team.results[test.name].score;
+          const msIndex = score.indexOf('ms');
+          team.results[test.name].score = (msIndex !== -1) ? +score.substring(0, msIndex) : +score.substring(0, score.length - 1) * 1000;
+          test.maxScore = team.results[test.name].score > test.maxScore ? team.results[test.name].score : test.maxScore;
+          test.minScore = team.results[test.name].score < test.minScore ? team.results[test.name].score : test.minScore;
+        } catch (e) {
+          console.log('error parsing score from load test', e);
+          team.results[test.name].success = false;
+          team.results[test.name].score = 0;
+        }
       } else {
         team.results[test.name].score = 0;
       }
-      delete team.results[test.name].output;
     });
   });
 
@@ -219,7 +227,7 @@ exports.calculateScores = async () => {
       }
     });
     team.score = functionalTests.concat(loadTests).reduce((total, test) => total + team.results[test.name].score, 0);
-    console.log(`update ${team.team_id} with $score`);
+    console.log(`update ${team.team_id} with ${team.score}`);
     await teams.updateScore(team.team_id, team.score);
   });
   console.log(JSON.stringify(loadTests));
