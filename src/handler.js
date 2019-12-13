@@ -138,6 +138,50 @@ exports.preTokenGeneration = async (event, context) => {
   }
 };
 
+const functionalTests = [
+  { name: 'reset', weight: 0 },
+  { name: 'price', weight: 2 },
+  { name: 'call', weight: 3 },
+  { name: 'listing', weight: 5 },
+  { name: 'invoice_request', weight: 6 },
+  { name: 'report', weight: 8 },
+  { name: 'invoice', weight: 6 }
+];
+const loadTests = [
+  { name: 'priceLoad', weight: 7 },
+  { name: 'callLoad', weight: 8 }
+];
+exports.calculateScores = async () => {
+  const executions = await testExecutions.getLatestExecutions();
+  loadTests.forEach(test => { test.maxScore = 0; });
+  // console.log(JSON.stringify(teams));
+  executions.forEach(team => {
+    console.log(`process team ${team.team_id}`);
+    team.results = JSON.parse(team.results);
+    functionalTests.forEach(test => {
+      team.results[test.name].score *= test.weight;
+      delete team.results[test.name].output;
+    });
+    loadTests.forEach(test => {
+      let score = team.results[test.name].score;
+      const msIndex = score.indexOf('ms');
+      team.results[test.name].score = (msIndex !== -1) ? +score.substring(0, msIndex) : +score.substring(0, score.length - 1) * 1000;
+      test.maxScore = team.results[test.name].score > test.maxScore ? team.results[test.name].score : test.maxScore;
+      delete team.results[test.name].output;
+    });
+  });
+
+  executions.forEach(async team => {
+    loadTests.forEach(test => {
+      team.results[test.name].score = test.weight * (test.maxScore - team.results[test.name].score) / test.maxScore;
+    });
+    team.score = functionalTests.concat(loadTests).reduce((total, test) => total + team.results[test.name].score, 0);
+    await teams.updateScore(team.team_id, team.score);
+  });
+  console.log(JSON.stringify(loadTests));
+  console.log(JSON.stringify(executions, null, 2));
+}
+
 const users = {
   getByEmail: (email) => query(`SELECT * FROM user WHERE email = ? `, [email]).then(users => users.length === 1 ? users[0] : null)
 }
@@ -154,7 +198,8 @@ const teams = {
                        }),
   findByEmail: (email) => teams.getAll().then(teams => teams.find(team => team.members && team.members.includes(email))),
   updateStatus: (teamId, status) => query(`UPDATE team SET status = ? WHERE id = ?`, [status, teamId]),
-  updateApiUrl: (teamId, apiUrl) => query(`UPDATE team SET api_url = ? WHERE id = ?`, [apiUrl, teamId])
+  updateApiUrl: (teamId, apiUrl) => query(`UPDATE team SET api_url = ? WHERE id = ?`, [apiUrl, teamId]),
+  updateScore: (teamId, score) => query(`UPDATE team SET score = ? + score_diversity + score_costs WHERE id = ?`, [score, teamId])
 }
 
 const testExecutions = {
@@ -178,5 +223,6 @@ const testExecutions = {
     }
   },
   getByCode: (code) => query(`SELECT * FROM test_execution WHERE code = ?`, [code]).then(tes => tes.length === 1 ? tes[0] : null),
-  saveResults: (code, results) => query(`UPDATE test_execution SET status = 'finished', results = ? WHERE code = ?`, [results, code])
+  saveResults: (code, results) => query(`UPDATE test_execution SET status = 'finished', results = ? WHERE code = ?`, [results, code]),
+  getLatestExecutions: () => query(`SELECT team_id, results FROM test_execution WHERE id IN (SELECT MAX(id) AS id FROM test_execution WHERE status = 'finished' GROUP BY team_id)`)
 }

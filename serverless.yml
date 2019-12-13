@@ -70,3 +70,7 @@ functions:
           pool: hack9-2019
           trigger: PreTokenGeneration
           existing: true
+  calculateScores:
+    handler: src/handler.calculateScores
+    events:
+      - schedule: cron(* * * * ? *)

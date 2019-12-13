@@ -38,3 +38,6 @@ CREATE TABLE `user` (
   KEY `fk_team_id_idx` (`team_id`),
   CONSTRAINT `fk_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE team ADD score_diversity decimal(8,3) DEFAULT 0 NOT NULL;
+ALTER TABLE team ADD score_costs decimal(8,3) DEFAULT 0 NOT NULL;
