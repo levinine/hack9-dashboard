@@ -198,6 +198,9 @@ exports.calculateScores = async () => {
       }
     });
     loadTests.forEach(test => {
+      if (!team.results[test.name]) {
+        return;
+      }
       delete team.results[test.name].output;
       // console.log(`${test.name} ${JSON.stringify(team.results[test.name])}`)
       if (team.results[test.name].success) {
