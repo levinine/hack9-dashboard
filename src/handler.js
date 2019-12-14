@@ -208,6 +208,9 @@ exports.calculateScores = async () => {
           const score = team.results[test.name].score;
           const msIndex = score.indexOf('ms');
           team.results[test.name].score = (msIndex !== -1) ? +score.substring(0, msIndex) : +score.substring(0, score.length - 1) * 1000;
+          if (team.results[test.name].score == 0) {
+            team.results[test.name].success = false;
+          }
           test.maxScore = team.results[test.name].score > test.maxScore ? team.results[test.name].score : test.maxScore;
           test.minScore = team.results[test.name].score < test.minScore ? team.results[test.name].score : test.minScore;
         } catch (e) {
