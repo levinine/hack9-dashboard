@@ -177,8 +177,9 @@ const functionalTests = [
   { name: 'invoice', weight: 6 }
 ];
 const loadTests = [
-  { name: 'priceLoad', weight: 7 },
-  { name: 'callLoad', weight: 8 }
+  { name: 'priceLoad', weight: 8 },
+  { name: 'callLoad', weight: 12 },
+  { name: 'listingLoad', weight: 10 }
 ];
 exports.calculateScores = async () => {
   const executions = await testExecutions.getLatestExecutions();
