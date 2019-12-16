@@ -101,8 +101,8 @@ exports.putApiUrl = async (event, context) => {
 exports.postTestRequest = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
   if (await checkAccess(event)) {
-    await testExecutions.create(event.pathParameters.teamId);
-    await teams.updateStatus(event.pathParameters.teamId, 'scheduled');
+    // await testExecutions.create(event.pathParameters.teamId);
+    // await teams.updateStatus(event.pathParameters.teamId, 'scheduled');
     return {
       statusCode: 200,
       body: ''
@@ -177,8 +177,8 @@ const functionalTests = [
   { name: 'invoice', weight: 6 }
 ];
 const loadTests = [
-  { name: 'priceLoad', weight: 7 },
-  { name: 'callLoad', weight: 8 }
+  { name: 'priceLoad', weight: 20 },
+  { name: 'callLoad', weight: 20 }
 ];
 exports.calculateScores = async () => {
   const executions = await testExecutions.getLatestExecutions();
@@ -187,6 +187,7 @@ exports.calculateScores = async () => {
   executions.forEach(team => {
     // console.log(`process team ${team.team_id}`);
     team.results = JSON.parse(team.results);
+    if (!team.results) return;
     functionalTests.forEach(test => {
       delete team.results[test.name].output;
       // console.log(`${test.name} ${JSON.stringify(team.results[test.name])}`)
@@ -206,9 +207,10 @@ exports.calculateScores = async () => {
           team.results[test.name].score = (msIndex !== -1) ? +score.substring(0, msIndex) : +score.substring(0, score.length - 1) * 1000;
           if (team.results[test.name].score == 0) {
             team.results[test.name].success = false;
+          } else {
+            test.maxScore = team.results[test.name].score > test.maxScore ? team.results[test.name].score : test.maxScore;
+            test.minScore = team.results[test.name].score < test.minScore ? team.results[test.name].score : test.minScore;
           }
-          test.maxScore = team.results[test.name].score > test.maxScore ? team.results[test.name].score : test.maxScore;
-          test.minScore = team.results[test.name].score < test.minScore ? team.results[test.name].score : test.minScore;
         } catch (e) {
           console.log('error parsing score from load test', e);
           team.results[test.name].success = false;
@@ -225,7 +227,7 @@ exports.calculateScores = async () => {
 
   executions.forEach(async team => {
     loadTests.forEach(test => {
-      if (team.results[test.name].success) {
+      if (team.results[test.name] && team.results[test.name].success) {
         team.results[test.name].score = test.weight * test.minScore / team.results[test.name].score;
       }
     });
