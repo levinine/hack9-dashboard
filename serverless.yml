@@ -11,10 +11,10 @@ provider:
   region: eu-west-1
   runtime: nodejs10.x
   environment:
-    DB_HOST: localhost
-    DB_USER: hack9
-    DB_PASSWORD: hack9-2019
-    DB_DATABASE: hack9-judge
+    DB_HOST: ${self:custom.config.${self:provider.stage}.dbHost}
+    DB_USER: ${self:custom.config.${self:provider.stage}.dbUser}
+    DB_PASSWORD: ${self:custom.config.${self:provider.stage}.dbPassword}
+    DB_DATABASE: ${self:custom.config.${self:provider.stage}.dbDatabase}
     DEFAULT_PROVIDER: aws
     DEFAULT_REGION: eu-west-1
 
