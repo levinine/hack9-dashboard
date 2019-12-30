@@ -2,3 +2,4 @@
 .vscode
 .webpack
 node_modules
+.build
