@@ -8,10 +8,10 @@ export class TeamService {
     this.teamRepository = teamRepository;
   }
 
-  public async getApiUrl(teamId: number): Promise<ApiUrlResponse>{
+  public async getApiUrl(teamId: number): Promise<ApiUrlResponse> {
     try {
       const response = await this.teamRepository.getApiUrl(teamId);
-      return { apiUrl: response.apiUrl };
+      return { apiUrl: response ? response.apiUrl : '' };
     } catch (error) {
       console.log(`Error TeamService.getApiUrl(): ${error}`);
       throw error;

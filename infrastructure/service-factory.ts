@@ -19,14 +19,14 @@ const userService = new UserService(userRepository);
 const teamService = new TeamService(teamRepository);
 const testExecutionService = new TestExecutionService(testExecutionRepository, teamRepository, testRepository, testToTestExecutionRepository);
 
-const getUserService = () => {
-  return userService;
-}
-const getTeamService = () => {
-  return teamService;
-}
-const getTestExecutionService = () => {
-  return testExecutionService;
+const services = {
+  user: userService,
+  team: teamService,
+  testExecution: testExecutionService
 }
 
-export { getUserService, getTeamService, getTestExecutionService }
+const ServiceFactory = {
+  get: name => services[name]
+}
+
+export { ServiceFactory }

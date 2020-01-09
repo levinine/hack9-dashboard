@@ -39,11 +39,11 @@ export class TeamRepository {
     }
   }
 
-  public async getApiUrl(teamId: number): Promise<Team> {
+  public async getApiUrl(teamId: number): Promise<Team | undefined> {
     try {
       const connection = await this.databaseService.getConnection();
       const repository = await connection.getRepository(Team);
-      return await repository.findOneOrFail(teamId, { select: ["apiUrl"] });
+      return await repository.findOne(teamId, { select: ["apiUrl"] });
     } catch (error) {
       console.log(`Error TeamRepository.getApiUrl(): ${error}`);
       throw error;

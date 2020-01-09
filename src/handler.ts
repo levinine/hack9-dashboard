@@ -2,11 +2,14 @@ import { errorHandler } from "../infrastructure/error-handler";
 import { responseHandler } from "../infrastructure/response-handler";
 import { ExecutionStatus } from "./enum/execution-status";
 import { getEmail } from "../infrastructure/get-email";
-import { getUserService, getTeamService, getTestExecutionService } from "../infrastructure/service-factory";
+import { ServiceFactory } from "../infrastructure/service-factory";
+import { UserService } from "./service/user.service";
+import { TeamService } from "./service/team.service";
+import { TestExecutionService } from "./service/test-execution.service";
 
-const userService = getUserService();
-const teamService = getTeamService();
-const testExecutionService = getTestExecutionService();
+const userService: UserService = ServiceFactory.get('user');
+const teamService: TeamService = ServiceFactory.get('team');
+const testExecutionService: TestExecutionService = ServiceFactory.get('testExecution');
 
 const getResults = async (event, context) => {
   try {
@@ -14,7 +17,7 @@ const getResults = async (event, context) => {
     const response = await teamService.getAll();
     return responseHandler(response);
   } catch (error) {
-    return errorHandler(error)
+    return errorHandler(error);
   }
 }
 
