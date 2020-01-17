@@ -2,7 +2,7 @@ import { DatabaseService } from "../service/database.service";
 import { Team } from "../entity/Team";
 import { User } from "../entity/User";
 import { UpdateResult } from "typeorm";
-import { GetResultsResponse } from "../dto/get-results-response.dto";
+import { ResultsResponse } from "../dto/results-response.dto";
 
 export class TeamRepository {
   private databaseService: DatabaseService;
@@ -11,13 +11,13 @@ export class TeamRepository {
     this.databaseService = databaseService;
   }
 
-  public async getAll(): Promise<GetResultsResponse[]> {
+  public async getAll(): Promise<ResultsResponse[]> {
     try {
       const connection = await this.databaseService.getConnection();
       const repository = await connection.getRepository(Team);
 
       return await repository
-        .query('SELECT t.id AS id, t.name AS name, t.score AS score, status, GROUP_CONCAT(u.email SEPARATOR ",") AS members \
+        .query('SELECT t.id AS id, t.name AS name, t.score AS score, t.status AS status, GROUP_CONCAT(u.email SEPARATOR ",") AS members \
           FROM team t \
           LEFT JOIN user u ON t.id = u.team_id \
           GROUP BY t.id, status \

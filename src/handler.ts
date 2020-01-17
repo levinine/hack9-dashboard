@@ -6,15 +6,29 @@ import { ServiceFactory } from "../infrastructure/service-factory";
 import { UserService } from "./service/user.service";
 import { TeamService } from "./service/team.service";
 import { TestExecutionService } from "./service/test-execution.service";
+import { TestToTestExecutionService } from "./service/test-to-test-execution.service";
+import { MessageService } from "./service/message.service";
 
 const userService: UserService = ServiceFactory.get('user');
 const teamService: TeamService = ServiceFactory.get('team');
 const testExecutionService: TestExecutionService = ServiceFactory.get('testExecution');
+const testToTestExecutionService: TestToTestExecutionService = ServiceFactory.get('testToTestExecution');
+const messageService: MessageService = ServiceFactory.get('message');
 
 const getResults = async (event, context) => {
   try {
     context.callbackWaitsForEmptyEventLoop = false;
     const response = await teamService.getAll();
+    return responseHandler(response);
+  } catch (error) {
+    return errorHandler(error);
+  }
+}
+
+const getResultDetails = async (event, context) => {
+  try {
+    context.callbackWaitsForEmptyEventLoop = false;
+    const response = await testToTestExecutionService.getLatestByTeamId(event.pathParameters.teamId);
     return responseHandler(response);
   } catch (error) {
     return errorHandler(error);
@@ -115,5 +129,56 @@ const calculateScores = async () => {
   }
 }
 
+const getMessages = async (event, context) => {
+  try {
+    context.callbackWaitsForEmptyEventLoop = false;
+    const email = getEmail(event);
+    const response = await messageService.findAllForUser(email);
+    return responseHandler(response);
+  } catch (error) {
+    return errorHandler(error);
+  }
+}
 
-export { getResults, getLatestExecution, getApiUrl, putApiUrl, postTestRequest, getTestRequest, postTestResults, preTokenGeneration, calculateScores }
+const postMessage = async (event, context) => {
+  try {
+    context.callbackWaitsForEmptyEventLoop = false;
+    const body = JSON.parse(event.body);
+    const email = getEmail(event);
+    await userService.checkAccess(-1, email);
+    const response = await messageService.create(body, email);
+    return responseHandler(response);
+  } catch (error) {
+    return errorHandler(error);
+  }
+}
+
+const deleteMessage = async (event, context) => {
+  try {
+    context.callbackWaitsForEmptyEventLoop = false;
+    const email = getEmail(event);
+    await userService.checkAccess(-1, email);
+    const response = await messageService.delete(event.pathParameters.messageId);
+    return responseHandler(response);
+  } catch (error) {
+    return errorHandler(error);
+  }
+}
+
+
+
+export {
+  getResults,
+  getLatestExecution,
+  getApiUrl,
+  putApiUrl,
+  postTestRequest,
+  getTestRequest,
+  postTestResults,
+  preTokenGeneration,
+  calculateScores,
+  getResultDetails,
+  getMessages,
+  postMessage,
+  deleteMessage
+}

@@ -10,6 +10,16 @@ export class UserRepository {
 
   public async getByEmail(email: string): Promise<User> {
     try {
+      if (process.env.IS_OFFLINE) {
+        return {
+          id: 1,
+          email: '',
+          name: '',
+          type: 'admin',
+          teamId: 0,
+          country: 'Serbia'
+        }
+      }
       const connection = await this.databaseService.getConnection();
       const repository = await connection.getRepository(User);
       return await repository.findOneOrFail({ where: [{ email }] });

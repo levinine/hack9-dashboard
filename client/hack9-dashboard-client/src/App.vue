@@ -4,15 +4,17 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   </head>
   <div class="contents">
-      <router-view />
+      <DashboardApp />
   </div>
 </div>
 </template>
 
 <script>
+import DashboardApp from './components/DashboardApp';
 
 export default {
-  name: "app"
+  name: "app",
+  components: { DashboardApp },
 };
 </script>
 
@@ -34,6 +36,6 @@ body,
   background: transparent !important;
 }
 .md-app-container {
-  background: url(https://hack9-judge-thread.s3-eu-west-1.amazonaws.com/banner.jpg) no-repeat fixed right top/cover;
+  background: url(https://hack9-judge-thread.s3-eu-west-1.amazonaws.com/banner.jpg) fixed right top;
 }
 </style>

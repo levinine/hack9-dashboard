@@ -4,6 +4,7 @@ import { Team } from "../entity/Team";
 import { TestExecution } from "../entity/TestExecution";
 import { TestToTestExecution } from "../entity/TestToTestExecution";
 import { Test } from "../entity/Test";
+import { Message } from "../entity/Message";
 
 export class DatabaseService {
   private entities = [
@@ -11,7 +12,8 @@ export class DatabaseService {
     Team,
     TestExecution,
     Test,
-    TestToTestExecution
+    TestToTestExecution,
+    Message
   ];
 
   private connectionManager: ConnectionManager;

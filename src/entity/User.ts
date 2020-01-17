@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index, JoinColumn, OneToMany } from "typeorm";
 import { Team } from "./Team";
+import { Message } from "./Message";
 
 @Entity()
 export class User {
@@ -12,15 +13,23 @@ export class User {
 
   @Column({ type: 'varchar', length: 150, nullable: false })
   @Index('email_UNIQUE', { unique: true })
-  email: number;
+  email: string;
+
+  @Column({ type: 'enum', enum: ['Serbia', 'Ukraine', 'Romania', 'Netherlands'], nullable: false, default: 'Serbia' })
+  country: string;
 
   @Column({ type: 'enum', enum: ['user', 'admin'], nullable: false, default: 'user' })
   type: string;
 
   @ManyToOne(type => Team, team => team.users)
-  team: Team;
+  @JoinColumn({
+    name: 'team_id',
+  })
+  team?: Team;
 
   @Column({ type: 'integer', name: 'team_id' })
   teamId: number;
 
+  @OneToMany(type => Message, message => message.user)
+  public messages?: Message[];
 }

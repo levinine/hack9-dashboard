@@ -1,4 +1,4 @@
-export class GetResultsResponse {
+export class ResultsResponse {
   id: number;
   name: string;
   apiUrl: string;

@@ -24,7 +24,9 @@ export class Test {
   isScoreAscending: boolean;
 
   @OneToOne(type => Test)
-  @JoinColumn()
+  @JoinColumn({
+    name: 'depends_on_id',
+  })
   dependsOn: Test;
 
   @OneToMany(type => TestToTestExecution, testToTestExecution => testToTestExecution.test)

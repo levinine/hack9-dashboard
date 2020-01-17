@@ -5,7 +5,6 @@ import { TeamRepository } from "../repository/team.repository";
 import { ExecutionStatus } from "../enum/execution-status";
 import { TestRepository } from "../repository/test.repository";
 import { TestToTestExecutionRepository } from "../repository/test-to-test-execution.repository";
-import { TestToTestExecution } from "../entity/TestToTestExecution";
 import { TestRequestResponse } from "../dto/test-request-response.dto";
 import { LatestExecutionResponse } from "../dto/latest-execution-response.dto";
 import { UpdateResult } from "typeorm";
@@ -132,16 +131,16 @@ export class TestExecutionService {
         this.calculateScoreWithContinuousResults(teamResults[latestTestExecutionForTeam.teamId], testsWithContinuousResults);
         latestTestExecutionForTeam.score = testsWithDescreteResults.concat(testsWithContinuousResults)
           .reduce((total, test) => total + (teamResults[latestTestExecutionForTeam.teamId][test.name] ?
-           teamResults[latestTestExecutionForTeam.teamId][test.name].score : 0), 0);
-
+            teamResults[latestTestExecutionForTeam.teamId][test.name].score : 0), 0);
         await this.teamRepository.updateScore(latestTestExecutionForTeam.teamId, latestTestExecutionForTeam.score);
 
-        [...testsWithDescreteResults, ...testsWithContinuousResults].forEach( async (test) => {
-          if (!teamResults[latestTestExecutionForTeam.teamId][test.name]) return;     
-            await this.testToTestExecutionRepository.create({
+        [...testsWithDescreteResults, ...testsWithContinuousResults].forEach(async (test) => {
+          if (!teamResults[latestTestExecutionForTeam.teamId][test.name]) return;
+          await this.testToTestExecutionRepository.create({
             testId: test.id,
             testExecutionId: latestTestExecutionForTeam.id,
-            score: teamResults[latestTestExecutionForTeam.teamId][test.name].score
+            score: teamResults[latestTestExecutionForTeam.teamId][test.name].score,
+            output: teamResults[latestTestExecutionForTeam.teamId][test.name].output
           });
         });
       });
@@ -156,29 +155,38 @@ export class TestExecutionService {
 
   private calculateScoreWithDescreteResults(result: any, tests: any[]) {
     tests.forEach(test => {
-      const testForTeam = result[test.name];
-      if (!testForTeam) return;
-      delete testForTeam.output;
-      testForTeam.testId = test.id;
-      if (testForTeam.success) {
-        testForTeam.score *= test.weight;
-      } else {
-        testForTeam.score = 0;
+      try {
+        const testForTeam = result[test.name];
+        if (!testForTeam) return;
+        testForTeam.testId = test.id;
+        if (testForTeam.success) {
+          testForTeam.score *= test.weight;
+        } else {
+          testForTeam.score = 0;
+        }
+      } catch (error) {
+        console.log(`Error TestExecutionService.calculateScoreWithDescreteResults(): ${error}`)
+        throw error;
       }
     })
   }
 
   private findMinAndMaxForTestsWithContinuousResults(result: any, tests: any[]) {
-    tests.forEach(test => {
-      try {
+    try {
+      tests.forEach(test => {
         //find result of specific test for team
         const testForTeam = result[test.name];
-        delete testForTeam.output;
         testForTeam.testId = test.id;
 
         if (testForTeam.success) {
-          if (testForTeam.score === 0) {
+          if (typeof testForTeam.score === 'string') {
+            const msIndex = testForTeam.score.indexOf('ms');
+            testForTeam.score = (msIndex !== -1) ? Number(testForTeam.score.substring(0, msIndex)) :
+              Number(testForTeam.score.substring(0, testForTeam.score.length - 1) * 1000);
+          }
+          if (testForTeam.score == 0) {
             testForTeam.success = false;
+            test.minScore = 0;
           } else {
             test.maxScore = testForTeam.score > test.maxScore ? testForTeam.score : test.maxScore;
             test.minScore = testForTeam.score < test.minScore ? testForTeam.score : test.minScore;
@@ -186,16 +194,16 @@ export class TestExecutionService {
         } else {
           testForTeam.score = 0;
         }
-      } catch (error) {
-        console.log('error parsing score from load test', error);
-        throw error;
-      }
-    });
+      });
+    } catch (error) {
+      console.log(`Error TestExecutionService.findMinAndMaxForTestsWithContinuousResults(): ${error}`);
+      throw error;
+    }
   }
-
   private calculateScoreWithContinuousResults(result: any, tests: any[]) {
-    try {
-      tests.forEach(test => {
+
+    tests.forEach(test => {
+      try {
         const testForTeam = result[test.name];
         if (!testForTeam) return;
         testForTeam.testId = test.id;
@@ -210,13 +218,15 @@ export class TestExecutionService {
         }
 
         if (testForTeam.success) {
-          testForTeam.score = test.weight * Math.abs(worstResult - testForTeam.score) / Math.abs(worstResult - bestResult);
+          testForTeam.score = test.weight * (Math.abs(worstResult - testForTeam.score) / Math.abs(worstResult - bestResult));
         } else {
           testForTeam.score = 0;
         }
-      });
-    } catch (error) {
-      throw error;
-    }
+      } catch (error) {
+        console.log(`Error TestExecutionService.calculateScoreWithContinuousResults(): ${error}`);
+        throw error;
+      }
+    });
+
   }
 }

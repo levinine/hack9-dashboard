@@ -1,34 +1,29 @@
 import Router from 'vue-router'
-import DashboardApp from '../src/components/DashboardApp'
+import Results from '../src/components/Results'
 import AuthService from '../src/service/auth.service';
 import ErrorComponent from '../src/components/Error';
+import Messages from '../src/components/Messages';
 
 
-// function requireAuth(to, from, next) {
+function requireAuth(to, from, next) {
 
-//   if (!auth.auth.isUserSignedIn()) {
-//     next({
-//       path: '/login',
-//       query: { redirect: to.fullPath }
-//     });
-//   } else {
-//     UserInfoApi.getUserInfo().then(response => {
-//       UserInfoStore.setLoggedIn(true);
-//       UserInfoStore.setCognitoInfo(response);
-//       next();
-//     });
-
-//   }
-// }
+  if (!AuthService.isUserAuthenticated()) {
+    next({
+      path: '/login',
+      query: { redirect: to.fullPath }
+    });
+  } else {
+    next();
+  }
+}
 export default new Router({
   mode: 'history',
   base: '/dev/',
   routes: [
     {
       path: '/',
-      name: 'DashboardApp',
-      component: DashboardApp,
-      // beforeEnter: requireAuth
+      name: 'Results',
+      component: Results,
     },
     {
       path: '/login', beforeEnter() {
@@ -49,6 +44,13 @@ export default new Router({
     },
     {
       path: '/error', component: ErrorComponent
-    }
+    },
+    {
+      path: '/messages',
+      name: 'Messages',
+      component: Messages,
+      props: true,
+      beforeEnter: requireAuth
+    },
   ]
 })

@@ -17,5 +17,8 @@ export default {
   },
   getResults() {
     return getAxios().get('/results');
-  }
+  },
+  getResultDetails(teamId) {
+    return getAxios().get(`/results/${teamId}/details`);
+  },
 }
