@@ -39,5 +39,16 @@ CREATE TABLE `user` (
   CONSTRAINT `fk_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `test` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(150) NOT NULL,
+  `weight` int(11) NOT NULL,
+  `min_score` int(11) DEFAULT NULL,
+  `max_score` int(11) DEFAULT NULL,
+  `type` enum('functional', 'load') NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `test_name_UNIQUE` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 ALTER TABLE team ADD score_diversity decimal(8,3) DEFAULT 0 NOT NULL;
 ALTER TABLE team ADD score_costs decimal(8,3) DEFAULT 0 NOT NULL;

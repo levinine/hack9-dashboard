@@ -2,6 +2,7 @@ service:
   name: hack9-dashboard
 
 plugins:
+  - serverless-plugin-typescript
   - serverless-offline
 
 provider:
@@ -10,10 +11,13 @@ provider:
   region: eu-west-1
   runtime: nodejs10.x
   environment:
-    DB_HOST: ${self:custom.config.${self:provider.stage}.dbHost}
+   DB_HOST: ${self:custom.config.${self:provider.stage}.dbHost}
     DB_USER: ${self:custom.config.${self:provider.stage}.dbUser}
     DB_PASSWORD: ${self:custom.config.${self:provider.stage}.dbPassword}
     DB_DATABASE: ${self:custom.config.${self:provider.stage}.dbDatabase}
+    DEFAULT_PROVIDER: aws
+    DEFAULT_REGION: eu-west-1
+    COGNITO_USER_POOL_NAME: hack9-2019
 
 custom:
   serverless-offline:
@@ -32,11 +36,19 @@ custom:
 
 functions:
   results:
-    handler: src/handler.results
+    handler: src/handler.getResults
     events:
       - http:
           path: /results
           method: GET
+  getResultDetails:
+    handler: src/handler.getResultDetails
+    events:
+      - http:
+          path: /results/{teamId}/details
+          method: GET
+          authorizer:
+            arn:   arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
   getLatestExecutionpiUrl:
     handler: src/handler.getLatestExecution
     events:
@@ -86,19 +98,42 @@ functions:
       - http:
           path: /testResults
           method: POST
-  staticContent:
-    handler: src/handler.staticContent
-    events:
-      - http: GET /
-      - http: GET /{any+}
   preTokenGeneration:
     handler: src/handler.preTokenGeneration
     events:
       - cognitoUserPool:
-          pool: hack9-2019
+          pool:  ${env:COGNITO_USER_POOL_NAME}
           trigger: PreTokenGeneration
           existing: true
   calculateScores:
     handler: src/handler.calculateScores
     events:
       - schedule: cron(* * * * ? *)
+      - http:
+          path: /calculateRes
+          method: GET
+
+  getMessages:
+    handler: src/handler.getMessages
+    events:
+      - http:
+          path: /messages
+          method: GET
+          authorizer:
+            arn:   arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+  postMessage:
+    handler: src/handler.postMessage
+    events:
+      - http:
+          path: /messages
+          method: POST
+          authorizer:
+            arn:   arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+  deleteMessage:
+    handler: src/handler.deleteMessage
+    events:
+      - http:
+          path: /messages/{messageId}
+          method: DELETE
+          authorizer:
+            arn:   arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
