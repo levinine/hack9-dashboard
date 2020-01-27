@@ -13,9 +13,11 @@
   },
   "devDependencies": {
     "serverless": "^1.56.1",
+    "serverless-localstack": "^0.4.24",
     "serverless-offline": "^5.12.0",
     "serverless-plugin-typescript": "^1.1.9",
-    "typescript": "^3.7.3"
+    "serverless-step-functions": "^2.17.0",
+    "typescript": "^3.7.5"
   },
   "author": "Levi9",
   "license": "MIT"

@@ -1,0 +1,38 @@
+service:
+  name: hack9-dashboard
+
+plugins:
+  - serverless-localstack
+  - serverless-plugin-typescript
+  - serverless-step-functions
+  - serverless-offline
+
+provider:
+  name: aws
+  stage: ${opt:stage, "test"}
+  region: eu-west-1
+  runtime: nodejs10.x
+  environment:
+    DB_HOST: database
+    DB_USER: hack9
+    DB_PASSWORD: hack9-2019
+    DB_DATABASE: hack9-judge
+    DEFAULT_PROVIDER: aws
+    DEFAULT_REGION: eu-west-1
+    COGNITO_USER_POOL_NAME: hack9-2019
+    STAGE: local
+
+custom:
+  localstack:
+    stages:
+      - local
+      - dev
+    host: http://localhost
+    endpoints:
+      S3: http://localhost:4572
+      CloudFormation: http://localhost:4581
+      Lambda: http://localhost:4574
+      StepFunctions: http://localhost:4585
+
+functions:
+  - ${file(./resources/step-function-state-functions.yml)}

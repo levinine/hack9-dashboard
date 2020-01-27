@@ -1,0 +1,93 @@
+results:
+  handler: src/handler.getResults
+  events:
+    - http:
+        path: /results
+        method: GET
+getResultDetails:
+  handler: src/handler.getResultDetails
+  events:
+    - http:
+        path: /results/{teamId}/details
+        method: GET
+        authorizer:
+          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+getLatestExecutionpiUrl:
+  handler: src/handler.getLatestExecution
+  events:
+    - http:
+        path: /teams/{teamId}/executions/latest
+        method: GET
+        authorizer:
+          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+getApiUrl:
+  handler: src/handler.getApiUrl
+  events:
+    - http:
+        path: /teams/{teamId}/apiUrl
+        method: GET
+        authorizer:
+          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+putApiUrl:
+  handler: src/handler.putApiUrl
+  events:
+    - http:
+        path: /teams/{teamId}/apiUrl
+        method: PUT
+        authorizer:
+          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+postTestRequest:
+  handler: src/handler.postTestRequest
+  events:
+    - http:
+        path: /teams/{teamId}/testRequests
+        method: POST
+        authorizer:
+          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+getTestRequest:
+  handler: src/handler.getTestRequest
+  events:
+    - http:
+        path: /testRequest
+        method: GET
+        request:
+          parameters:
+            querystrings:
+              cloudProvider: false
+              region: false
+postTestResults:
+  handler: src/handler.postTestResults
+  events:
+    - http:
+        path: /testResults
+        method: POST
+preTokenGeneration:
+  handler: src/handler.preTokenGeneration
+  events:
+    - cognitoUserPool:
+        pool: ${env:COGNITO_USER_POOL_NAME}
+        trigger: PreTokenGeneration
+        existing: true
+calculateScores:
+  handler: src/handler.calculateScores
+  events:
+    - schedule: cron(* * * * ? *)
+    - http:
+        path: /calculateRes
+        method: GET
+getMessages:
+  handler: src/handler.getMessages
+  events:
+    - http:
+        path: /messages
+        method: GET
+        authorizer:
+          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+postMessage:
+  handler: src/handler.postMessage
+  events:
+    - http:
+        path: /messages/create
+        method: POST
+        authorizer:
+          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr

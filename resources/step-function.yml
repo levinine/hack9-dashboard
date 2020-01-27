@@ -1,0 +1,26 @@
+ttlMachine:
+  events:
+    - http:
+        path: /messages
+        method: POST
+        authorizer:
+          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+  definition:
+    Comment: "Delete message after it expires"
+    StartAt: FirstState
+    States:
+      FirstState:
+        Type: Task
+        Resource:
+          Fn::GetAtt: [postMessageWithExpirationTime, Arn]
+        Next: WaitState
+      WaitState:
+        Type: Wait
+        SecondsPath: "$.expirationTime"
+        Next: FinalState
+      FinalState:
+        Type: Task
+        Resource:
+          Fn::GetAtt: [deleteMessage, Arn]
+        InputPath: "$.id"
+        End: true

@@ -8,6 +8,7 @@ import { TestToTestExecutionRepository } from "../repository/test-to-test-execut
 import { TestRequestResponse } from "../dto/test-request-response.dto";
 import { LatestExecutionResponse } from "../dto/latest-execution-response.dto";
 import { UpdateResult } from "typeorm";
+import { ResultsResponse } from "../dto/results-response.dto";
 
 export class TestExecutionService {
   private testExecutionRepository: TestExecutionRepository;
@@ -91,6 +92,23 @@ export class TestExecutionService {
       return await this.teamRepository.updateStatus(testExecution.teamId, ExecutionStatus.READY);
     } catch (error) {
       console.log(`Error TestExecutionService.getLatestExecution(): ${error}`);
+      throw error;
+    }
+  }
+
+  public async getResults(): Promise<ResultsResponse[]> {
+    try {
+      const teams = await this.teamRepository.getAll();
+      const scheduledExecutions = await this.testExecutionRepository.getScheduledExecutions();
+      scheduledExecutions.forEach((execution, idx) => {
+        const team = teams.find(team => team.id === execution.teamId)
+        if(team) {
+          team.executionNumber = idx + 1;
+        }
+      });
+      return teams;
+    } catch (error) {
+      console.log(`Error TeamService.getAll(): ${error}`);
       throw error;
     }
   }

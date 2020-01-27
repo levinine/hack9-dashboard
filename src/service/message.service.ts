@@ -18,6 +18,9 @@ export class MessageService {
     try {
       const user = await this.userRepository.getByEmail(email);
       message.userId = user.id;
+      if(!message.isGlobal && !message.country){
+        throw new Error('County is required if message is not global!')
+      }
       await this.messageRepository.create(message);
       return message;
     } catch (error) {

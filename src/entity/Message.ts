@@ -19,8 +19,8 @@ export class Message {
   @Column({ type: 'boolean', name: 'is_global', nullable: false })
   isGlobal: string;
 
-  @Column({ type: 'datetime',  name: 'expiration_time', nullable: false })
-  expirationTime: Date;
+  @Column({ type: 'integer',  name: 'expiration_time', nullable: true })
+  expirationTime: number;
 
   @Column({ type: 'integer', name: 'user_id' })
   userId: number;
