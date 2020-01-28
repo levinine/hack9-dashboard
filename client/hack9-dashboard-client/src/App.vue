@@ -4,17 +4,17 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   </head>
   <div class="contents">
-      <DashboardApp />
+    <DashboardApp />
   </div>
 </div>
 </template>
 
 <script>
-import DashboardApp from './components/DashboardApp';
+import DashboardApp from "./components/DashboardApp";
 
 export default {
   name: "app",
-  components: { DashboardApp },
+  components: { DashboardApp }
 };
 </script>
 
@@ -25,6 +25,8 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+  position: absolute;
+  width: 100%;
 }
 html,
 body,
@@ -36,6 +38,7 @@ body,
   background: transparent !important;
 }
 .md-app-container {
-  background: url(https://hack9-judge-thread.s3-eu-west-1.amazonaws.com/banner.jpg) fixed right top;
+  background: url(https://hack9-judge-thread.s3-eu-west-1.amazonaws.com/banner.jpg)
+    fixed right top;
 }
 </style>

@@ -3,84 +3,80 @@
     <md-app md-waterfall md-mode="fixed">
       <md-app-toolbar class>
         <div class="md-toolbar-row md-layout">
-          <div class="md-title md-layout-item md-size-80 title">Hack9 leaderboard</div>
-          <div class="md-caption md-layout-item md-size-10">
+          <router-link to="/" class="md-layout-item md-size-60">
+            <div class="md-title md-layout-item title">Hack9 leaderboard</div>
+          </router-link>
+          <div class="md-caption md-size-20 md-layout-item md-size-10">
             <div class="alert alert-info">{{userEmail}}</div>
           </div>
-          <div class="md-title md-layout-item">
-            <router-link to="/messages">
-              <md-icon class="md-size-2x">mail_outline</md-icon>
-            </router-link>
-            <router-link
-              :to="{ path: (isUserAuthenticated()? '/logout': '/login') }"
-            >{{isUserAuthenticated()? "Logout" : "Login"}}</router-link>
+          <div class="md-title md-size-15 md-layout-item" style="text-align: right">
+            <div class="link-container">
+              <router-link to="/messages" v-show="isUserAuthenticated">
+                <md-icon class="md-size-1x">mail_outline</md-icon>
+                <md-tooltip md-direction="bottom">Messages</md-tooltip>
+              </router-link>
+            </div>
+            <div class="link-container">
+              <router-link
+                class="md-size-5"
+                v-show="isUserAuthenticated && isUserAdmin"
+                to="/newMessage"
+              >
+                <md-icon class="md-size-1x">create</md-icon>
+                <md-tooltip md-direction="bottom">New message</md-tooltip>
+              </router-link>
+            </div>
+            <div class="link-container">
+              <router-link
+                class="login-link"
+                :to="{ path: (isUserAuthenticated? '/logout': '/login') }"
+              >{{isUserAuthenticated? "Logout" : "Login"}}</router-link>
+            </div>
           </div>
         </div>
       </md-app-toolbar>
 
       <md-app-content>
+        <Spinner v-if="state.loading" />
         <router-view />
+
+        <div v-if="state.newMessages.length" class="modal-wrapper">
+          <span v-for="message in state.newMessages" :key="message.id">
+            <MessageModal :message="message" @close="closeMessage" />
+          </span>
+        </div>
       </md-app-content>
     </md-app>
   </div>
 </template>
 
 <script>
-import AuthService from "../service/auth.service";
-import MessageService from "../service/message.service";
+import Spinner from "./Spinner";
+import store from "../store";
+import MessageModal from "./MessageModal";
 
 export default {
   name: "DashboardApp",
+  components: { Spinner, MessageModal },
+  mounted: function() {
+    store.getAllMessages();
+    setInterval(store.getNewMessages, 30000);
+  },
   data: function() {
     return {
-      userEmail: AuthService.getUserEmail(),
-      messages: [],
-      newMessages: []
+      state: store.state,
+      closeMessage: store.closeMessage
     };
   },
-  // mounted: function() {
-  //   this.getAllMessages();
-  //   setInterval(this.getNewMessages, 30000);
-  // },
-  methods: {
-    isUserAdmin: function() {
-      return AuthService.isUserAdmin();
+  computed: {
+    isUserAdmin() {
+      return store.isUserAdmin();
     },
-    isUserAuthenticated: function() {
-      return AuthService.isUserAuthenticated();
+    isUserAuthenticated() {
+      return store.isUserAuthenticated();
     },
-    getAllMessages: function() {
-      MessageService.getMessages().then(response => {
-        this.messages = [...response.data];
-      });
-    },
-    getNewMessages: function() {
-      MessageService.getMessages().then(response => {
-        response.data.forEach(m => {
-          try {
-            let message = this.messages.find(message => message.id === m.id);
-            if (!message) {
-              this.messages.push(m);
-              this.newMessages.push(m);
-            }
-          } catch (error) {
-            throw error;
-          }
-        });
-      });
-    },
-    closeMessage: function(messageId) {
-      let index = -1;
-      this.newMessages.some((message, idx) => {
-        if (message.id === messageId) {
-          index = idx;
-          return true;
-        }
-        return false;
-      });
-      if (index !== -1) {
-        this.newMessages.splice(index, 1);
-      }
+    userEmail() {
+      return store.getUserEmail();
     }
   }
 };
@@ -123,5 +119,18 @@ export default {
 }
 .title {
   text-align: left;
+}
+.login-link {
+  font-size: 20px;
+  color: aliceblue;
+}
+.link-container {
+  display: inline-block;
+  margin-left: 20px;
+}
+.modal-wrapper {
+  position: relative;
+  z-index: 9998;
+  top: 0;
 }
 </style>

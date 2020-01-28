@@ -1,0 +1,40 @@
+version: '3.2'
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack_demo
+    ports:
+      - '4563-4599:4563-4599'
+      - '8055:8080'
+    environment:
+      - SERVICES=s3,lambda,stepfunctions,cloudformation,apigateway,sts,iam
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+      - AWS_DEFAULT_REGION=eu-west-1
+      - LAMBDA_EXECUTOR=docker-reuse
+      - LAMBDA_DOCKER_NETWORK=hack9-dashboard_db
+    volumes:
+      - './.localstack:/tmp/localstack'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    networks:
+      - db
+
+
+  database:
+    image: mysql/mysql-server:5.7
+    container_name: mysql-hack9
+    ports:
+      - '3306:3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD=1234
+      - MYSQL_USER=hack9
+      - MYSQL_PASSWORD=hack9-2019
+      - MYSQL_DATABASE=hack9-judge
+    volumes:
+      - './db:/docker-entrypoint-initdb.d'
+    networks:
+      - db
+
+
+networks:
+  db:

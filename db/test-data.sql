@@ -34,7 +34,7 @@ INSERT INTO `team` (`id`, `name`, `api_url`, `score`, `cloud_provider`, `region`
 (33,'MS Haccess',NULL,0.000,'azure','westeurope','ready'),
 (34,'Judges','http://ec2-52-50-206-210.eu-west-1.compute.amazonaws.com:8080/reference',0.000,'aws','eu-west-1','ready');
 
-INSERT INTO `user` VALUES
+INSERT INTO `user` (`id`, `name`, `email`, `team_id`, `type`) VALUES
 (1,'Miloš Jovanović','m.jovanovic@example.com',34,'admin'),
 (2,'Dragan Gajić','d.gajic@example.com',34,'admin'),
 (3,'Nikola Milutinović','n.milutinovic@example.com',34,'admin'),

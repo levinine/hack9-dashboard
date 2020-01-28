@@ -7,7 +7,7 @@ export default {
     return getAxios().get(`${path}`);
   },
   postMessage(message) {
-    return getAxios().post(`${path}`, { message });
+    return getAxios().post(`${path}`, { ...message });
   },
   deleteMessage(messageId) {
     return getAxios().delete(`${path}/${messageId}`);

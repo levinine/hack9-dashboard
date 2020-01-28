@@ -97,6 +97,17 @@ export class TestExecutionRepository {
       throw error;
     }
   }
-}
 
+  public async getScheduledExecutions(): Promise<TestExecution[]> {
+    try {
+      const connection = await this.databaseService.getConnection();
+      const repository = await connection.getRepository(TestExecution);
+      return await repository
+        .query(`SELECT id, team_id AS teamId FROM test_execution WHERE id IN (SELECT MAX(id) AS id FROM test_execution WHERE status = 'scheduled' GROUP BY team_id) ORDER BY id`);
+    } catch (error) {
+      console.log(`Error TestExecutionRepository.getLatestExecution(): ${error}`);
+      throw error;
+    }
+  }
+}
 

@@ -18,7 +18,7 @@ const messageService: MessageService = ServiceFactory.get('message');
 const getResults = async (event, context) => {
   try {
     context.callbackWaitsForEmptyEventLoop = false;
-    const response = await teamService.getAll();
+    const response = await testExecutionService.getResults();
     return responseHandler(response);
   } catch (error) {
     return errorHandler(error);
@@ -153,12 +153,24 @@ const postMessage = async (event, context) => {
   }
 }
 
+const postMessageWithExpirationTime = async (event, context) => {
+  try {
+    const email = getEmail(event);
+    await userService.checkAccess(-1, email);
+    const response = await messageService.create(event, email);
+    return response;
+  } catch (error) {
+    return errorHandler(error);
+  }
+}
+
 const deleteMessage = async (event, context) => {
   try {
     context.callbackWaitsForEmptyEventLoop = false;
     const email = getEmail(event);
     await userService.checkAccess(-1, email);
-    const response = await messageService.delete(event.pathParameters.messageId);
+    const messageId = event.pathParameters ? event.pathParameters.messageId : event; 
+    const response = await messageService.delete(messageId);
     return responseHandler(response);
   } catch (error) {
     return errorHandler(error);
@@ -180,5 +192,6 @@ export {
   getResultDetails,
   getMessages,
   postMessage,
-  deleteMessage
+  deleteMessage,
+  postMessageWithExpirationTime
 }

@@ -17,7 +17,11 @@
     height: 100px;
 }
 .md-title {
-    font-size: 60px;
+    font-size: 50px;
     line-height: 50px;
 }
+.md-theme-default a:not(.md-button) {
+  color: aliceblue;
+}
+
 @import "~vue-material/dist/components/MdToolbar/theme"; // Apply the Toolbar theme

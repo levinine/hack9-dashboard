@@ -1,6 +1,6 @@
 <template>
   <div>
-    <md-card class="md-layout md-elevation-8" v-for="message in messages" :key="message.id">
+    <md-card class="md-layout md-elevation-8" v-for="message in state.messages" :key="message.id">
       <md-card-header class="md-layout-item md-size-100">
         <div class="md-title">{{ message.title }}</div>
         <div class="md-subhead">{{ message.createdBy }}</div>
@@ -11,25 +11,14 @@
 </template>
 
 <script>
-import MessageService from "../service/message.service";
+import store from "../store";
 
 export default {
   name: "Messages",
   data: function() {
     return {
-      messages: [],
+      state: store.state
     };
-  },
-  mounted: function() {
-    this.getAllMessages();
-    setInterval(this.getAllMessages, 30000);
-  },
-  methods: {
-    getAllMessages: function() {
-      MessageService.getMessages().then(response => {
-        this.messages = [...response.data];
-      });
-    }
   }
 };
 </script>

@@ -1,8 +1,7 @@
 import axios from "axios";
 import AuthService from './auth.service';
 
-const baseDomain = 'http://localhost:3000';
-const baseURL = `${baseDomain}/dev`;
+const baseURL = process.env.VUE_APP_API_URL;
 
 const axiosInstance = axios.create({ baseURL });
 

@@ -1,5 +1,6 @@
 import { TeamRepository } from "../repository/team.repository";
 import { ApiUrlResponse } from "../dto/api-url-response.dto";
+import { ResultsResponse } from "../dto/results-response.dto";
 
 export class TeamService {
   private teamRepository: TeamRepository;
@@ -28,7 +29,7 @@ export class TeamService {
     }
   }
 
-  public async getAll() {
+  public async getAll(): Promise<ResultsResponse[]> {
     try {
       return await this.teamRepository.getAll();
     } catch (error) {
