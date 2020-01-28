@@ -18,13 +18,13 @@
           <md-button v-show="isMyTeam(team) || isUserAdmin()" @click="apiUrlSettings(team)">
             <md-icon class="md-size-2x">settings_applications</md-icon>
           </md-button>
-          <md-button v-show="team.editApiUrl" @click="setApiUrl(team)">
-            <md-icon class="md-size-2x">check</md-icon>
-          </md-button>
           <md-field v-show="team.editApiUrl">
             <label>API URL</label>
             <md-input v-model="team.apiUrl"></md-input>
           </md-field>
+          <md-button v-show="team.editApiUrl" @click="setApiUrl(team)">
+            <md-icon class="md-size-2x">check</md-icon>
+          </md-button>
         </md-card-actions>
 
         <md-card-actions class="md-layout-item md-size-20" md-alignment="right">
@@ -35,7 +35,8 @@
         </md-card-actions>
 
         <md-card-actions class="md-layout-item md-size-20" md-alignment="right">
-          <label>SCORE: {{Number(team.score)}}</label>
+          <label>SCORE: {{Number(team.score)}} </label>
+          <label v-show="team.executionNumber">Exec. no: {{Number(team.executionNumber)}}</label>
           <md-button v-if="team.status==='ready'" @click="requestTest(team.id)">
             <md-icon class="md-size-2x">play_arrow</md-icon>
           </md-button>
@@ -53,14 +54,13 @@
 
 <script>
 import Vue from "vue";
-import ResultDetails from './ResultDetails';
-import AuthService from '../service/auth.service';
-import TeamService from '../service/team.service';
-
+import ResultDetails from "./ResultDetails";
+import AuthService from "../service/auth.service";
+import TeamService from "../service/team.service";
 
 export default {
   name: "Results",
-	components: { ResultDetails },
+  components: { ResultDetails },
   data: function() {
     return {
       teams: [],
@@ -119,6 +119,9 @@ export default {
       TeamService.postTestRequest(teamId);
     },
     getResultDetails: function(team) {
+      if (team.showDetails) {
+        Vue.set(team, "showDetails", false);
+      }
       if (this.isUserAdmin() || this.isMyTeam(team)) {
         TeamService.getResultDetails(team.id).then(response => {
           Vue.set(team, "showDetails", true);

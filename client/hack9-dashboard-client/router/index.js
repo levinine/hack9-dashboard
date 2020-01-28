@@ -3,10 +3,12 @@ import Results from '../src/components/Results'
 import AuthService from '../src/service/auth.service';
 import ErrorComponent from '../src/components/Error';
 import Messages from '../src/components/Messages';
+import MessageForm from '../src/components/MessageForm';
+import Spinner from '../src/components/Spinner';
+import store from "../src/store";
 
 
 function requireAuth(to, from, next) {
-
   if (!AuthService.isUserAuthenticated()) {
     next({
       path: '/login',
@@ -16,7 +18,19 @@ function requireAuth(to, from, next) {
     next();
   }
 }
-export default new Router({
+
+function requireAdminAccess(to, from, next) {
+  if (!AuthService.isUserAdmin()) {
+    next({
+      path: '/error',
+      query: { redirect: to.fullPath }
+    });
+  } else {
+    next();
+  }
+}
+
+const router = new Router({
   mode: 'history',
   base: '/dev/',
   routes: [
@@ -31,7 +45,9 @@ export default new Router({
       }
     },
     {
-      path: '/authorize', beforeEnter(to, from, next) {
+      path: '/authorize', 
+      component: Spinner,
+      beforeEnter(to, from, next) {
         AuthService.parseCognitoWebResponse();
         next('/');
       }
@@ -52,5 +68,23 @@ export default new Router({
       props: true,
       beforeEnter: requireAuth
     },
+    {
+      path: '/newMessage',
+      name: 'MessageForm',
+      component: MessageForm,
+      props: true,
+      beforeEnter: requireAdminAccess
+    },
   ]
-})
+});
+
+router.beforeEach((to, from, next) => {
+  store.state.loading = true;
+  next();
+});
+
+router.afterEach(() => {
+  store.state.loading = false;
+});
+
+export default router;
