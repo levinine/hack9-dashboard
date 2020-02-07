@@ -9,6 +9,7 @@ import { TestRequestResponse } from "../dto/test-request-response.dto";
 import { LatestExecutionResponse } from "../dto/latest-execution-response.dto";
 import { UpdateResult } from "typeorm";
 import { ResultsResponse } from "../dto/results-response.dto";
+import { NotFoundError } from "../../infrastructure/errors";
 
 export class TestExecutionService {
   private testExecutionRepository: TestExecutionRepository;
@@ -37,9 +38,10 @@ export class TestExecutionService {
     }
   }
 
-  public async acquire(cloudProvider: string, region: string): Promise<TestRequestResponse> {
+  public async acquire(cloudProvider: string, region: string): Promise<TestRequestResponse | null> {
     try {
       const testExecution = await this.testExecutionRepository.getByCloudProviderRegionAndStatus(cloudProvider, region);
+      if (!testExecution) throw new NotFoundError('Test execution not found!');
       const code = crypto.randomBytes(20).toString('hex');
       console.log(`updating test_execution to running with code ${code}`);
       await this.testExecutionRepository.updateStatusAndCode(testExecution.id, code);
@@ -102,7 +104,7 @@ export class TestExecutionService {
       const scheduledExecutions = await this.testExecutionRepository.getScheduledExecutions();
       scheduledExecutions.forEach((execution, idx) => {
         const team = teams.find(team => team.id === execution.teamId)
-        if(team) {
+        if (team) {
           team.executionNumber = idx + 1;
         }
       });
@@ -127,7 +129,7 @@ export class TestExecutionService {
       })
 
       //get teams with their latest test results
-      const latestTestExecutionsForTeams = await this.testExecutionRepository.getLatestExecutionsForTeams();
+      const latestTestExecutionsForTeams: TestExecution[] = await this.testExecutionRepository.getLatestExecutionsForTeams();
       if (!latestTestExecutionsForTeams) return;
 
       //results for team with parsed results
@@ -167,7 +169,6 @@ export class TestExecutionService {
       throw error;
     }
   }
-
 
   //PRIVATE METHODS
 

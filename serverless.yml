@@ -9,38 +9,45 @@ plugins:
 
 provider:
   name: aws
-  stage: ${opt:stage, "test"}
+  stage: ${opt:stage, "dev"}
   region: eu-west-1
   runtime: nodejs10.x
   environment:
+    DEFAULT_PROVIDER: aws
+    DEFAULT_REGION: eu-west-1
     DB_HOST: ${self:custom.config.${self:provider.stage}.dbHost}
     DB_USER: ${self:custom.config.${self:provider.stage}.dbUser}
     DB_PASSWORD: ${self:custom.config.${self:provider.stage}.dbPassword}
     DB_DATABASE: ${self:custom.config.${self:provider.stage}.dbDatabase}
-    DEFAULT_PROVIDER: aws
-    DEFAULT_REGION: eu-west-1
     COGNITO_USER_POOL_NAME: hack9-2019
-    STAGE: ${opt:stage, "test"}
+    COGNITO_USER_POOL_ARN: ${self:custom.config.${self:provider.stage}.cognitoUserPoolArn}
+    STAGE: ${opt:stage, "dev"}
 
 custom:
   serverless-offline:
     prefix: dev
   config:
-    test:
+    dev:
       dbHost: localhost
       dbUser: hack9
       dbPassword: hack9-2019
       dbDatabase: hack9-judge
-    dev:
+      cognitoUserPoolName: hack9-2019
+      cognitoUserPoolArn: 
+    test:
       dbHost: ${ssm:/hack9-dashboard/host}
       dbUser: ${ssm:/hack9-dashboard/user}
       dbPassword: ${ssm:/hack9-dashboard/password}
       dbDatabase: ${ssm:/hack9-dashboard/database}
+      cognitoUserPoolArn: ${ssm:/hack9-dashboard/cognito-arn}
+      cognitoUserPoolName: ${ssm:/hack9-dashboard/cognito-pool}
     prod:
       dbHost: ${ssm:/hack9-dashboard-prod/host}
       dbUser: ${ssm:/hack9-dashboard-prod/user}
       dbPassword: ${ssm:/hack9-dashboard-prod/password}
       dbDatabase: ${ssm:/hack9-dashboard-prod/database}
+      cognitoUserPoolArn: ${ssm:/hack9-dashboard-prod/cognito-arn}
+      cognitoUserPoolName: ${ssm:/hack9-dashboard-prod/cognito-pool}
 
 functions:
   - ${file(./resources/functions.yml)}

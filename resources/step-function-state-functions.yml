@@ -7,4 +7,4 @@ deleteMessage:
         path: /messages/{messageId}
         method: DELETE
         authorizer:
-          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+          arn: ${self:custom.config.${self:provider.stage}.cognitoUserPoolArn}

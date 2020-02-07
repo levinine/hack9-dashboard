@@ -17,8 +17,8 @@ export class Test {
   @Column({ type:'smallint', name: 'is_score_descrete' })
   isScoreDescrete: boolean;
 
-  @Column({ type: 'varchar', length: 150 })
-  endpoint: string;
+  @Column({ type: 'varchar', name: 'test_data_file', length: 150, nullable: true })
+  testDataFile: string;
 
   @Column({ type:'smallint', name: 'is_score_ascending' })
   isScoreAscending: boolean;

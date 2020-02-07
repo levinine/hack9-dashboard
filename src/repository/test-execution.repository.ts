@@ -24,11 +24,11 @@ export class TestExecutionRepository {
     }
   }
 
-  public async getByCloudProviderRegionAndStatus(cloudProvider: string, region: string): Promise<TestExecution> {
+  public async getByCloudProviderRegionAndStatus(cloudProvider: string, region: string): Promise<TestExecution | undefined> {
     try {
       const connection = await this.databaseService.getConnection();
       const repository = await connection.getRepository(TestExecution);
-      return await repository.findOneOrFail({ where: [{ cloudProvider, region, status: ExecutionStatus.SCHEDULED }], order: { id: 'ASC' } });
+      return await repository.findOne({ where: [{ cloudProvider, region, status: ExecutionStatus.SCHEDULED }], order: { id: 'ASC' } });
     } catch (error) {
       console.log(`Error TestExecutionRepository.getByCloudProviderRegionAndStatus(): ${error}`);
       throw error;

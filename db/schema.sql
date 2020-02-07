@@ -1,4 +1,4 @@
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `hack9-judge` /*!40100 DEFAULT CHARACTER SET latin1 */;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `hack9-judge` /*!40100 DEFAULT CHARACTER SET utf8 */;
 
 USE `hack9-judge`;
 DROP TABLE IF EXISTS `message`;
@@ -15,7 +15,7 @@ CREATE TABLE `message` (
   PRIMARY KEY (`id`),
   KEY `FK_54ce30caeb3f33d68398ea10376` (`user_id`),
   CONSTRAINT `FK_54ce30caeb3f33d68398ea10376` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 DROP TABLE IF EXISTS `team`;
@@ -75,7 +75,7 @@ CREATE TABLE `test_execution` (
   KEY `status_IX` (`status`),
   KEY `FK_d11b7ac3bab63dde4020bf06293` (`team_id`),
   CONSTRAINT `FK_d11b7ac3bab63dde4020bf06293` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 DROP TABLE IF EXISTS `test_to_test_execution`;
@@ -90,7 +90,7 @@ CREATE TABLE `test_to_test_execution` (
   KEY `FK_c1715092299c93b94eaab612b52` (`test_execution_id`),
   CONSTRAINT `FK_c1715092299c93b94eaab612b52` FOREIGN KEY (`test_execution_id`) REFERENCES `test_execution` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_e3f1b033b731587f5f0e4e2736b` FOREIGN KEY (`test_id`) REFERENCES `test` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 DROP TABLE IF EXISTS `user`;

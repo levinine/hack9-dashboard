@@ -18,7 +18,7 @@ export class TestExecution {
   @Column({ type: 'decimal', precision: 10, scale: 3, nullable: false, default: 0.000 })
   score: number;
 
-  @Column({ type: 'longtext', default: null })
+  @Column({ type: 'longtext',  charset: 'utf8mb4', default: null })
   results: string;
 
   @Column({ type: 'enum', name: 'cloud_provider', enum: ['aws', 'azure', 'gcp'], default: 'aws' })

@@ -10,6 +10,7 @@ import { TestExecutionService } from "../src/service/test-execution.service";
 import { TestToTestExecutionService } from "../src/service/test-to-test-execution.service";
 import { MessageRepository } from "../src/repository/message.repository";
 import { MessageService } from "../src/service/message.service";
+import { TestService } from "../src/service/test.service";
 
 const databaseService = new DatabaseService();
 const userRepository = new UserRepository(databaseService);
@@ -24,13 +25,15 @@ const teamService = new TeamService(teamRepository);
 const testExecutionService = new TestExecutionService(testExecutionRepository, teamRepository, testRepository, testToTestExecutionRepository);
 const testToTestExecutionService = new TestToTestExecutionService(testToTestExecutionRepository);
 const messageService = new MessageService(messageRepository, userRepository);
+const testService = new TestService(testRepository);
 
 const services = {
   user: userService,
   team: teamService,
   testExecution: testExecutionService,
   testToTestExecution: testToTestExecutionService,
-  message: messageService
+  message: messageService,
+  test: testService
 }
 
 const ServiceFactory = {

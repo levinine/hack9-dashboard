@@ -241,3 +241,15 @@ INSERT INTO `user` (`id`, `name`, `email`, `team_id`, `type`) VALUES
 (204,'Nemanja Gladovic','n.gladovic@example.com',33,'user'),
 (205,'Nenad Domuz','n.domuz@example.com',33,'user'),
 (206,'Stefan Krstic','s.krstic@example.com',33,'user');
+
+
+INSERT INTO `test` (`id`, `name`, `weight`, `test_data_file`, `depends_on_id`, `is_score_descrete`, `is_score_ascending`) VALUES 
+(1,'reset',0,NULL,NULL,1,0),
+(2,'price',2,'test_data_for_ft_price.csv',NULL,1,0),
+(3,'call',3,'test_data_for_ft_calls.csv',NULL,1,0),
+(4,'listing',5,'test_data_for_ft_listing.csv',NULL,1,0),
+(5,'invoice_request',6,'test_data_for_ft_invoice_request.csv',NULL,1,0),
+(6,'report',8,'test_data_for_ft_report.csv',NULL,1,0),
+(7,'invoice',6,'test_data_for_ft_invoice.csv',NULL,1,0),
+(8,'priceLoad',20,NULL,2,0,1),
+(9,'callLoad',20,NULL,3,0,0);

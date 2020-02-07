@@ -11,7 +11,7 @@ getResultDetails:
         path: /results/{teamId}/details
         method: GET
         authorizer:
-          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+          arn: ${self:custom.config.${self:provider.stage}.cognitoUserPoolArn}
 getLatestExecutionpiUrl:
   handler: src/handler.getLatestExecution
   events:
@@ -19,7 +19,7 @@ getLatestExecutionpiUrl:
         path: /teams/{teamId}/executions/latest
         method: GET
         authorizer:
-          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+          arn: ${self:custom.config.${self:provider.stage}.cognitoUserPoolArn}
 getApiUrl:
   handler: src/handler.getApiUrl
   events:
@@ -27,7 +27,7 @@ getApiUrl:
         path: /teams/{teamId}/apiUrl
         method: GET
         authorizer:
-          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+          arn: ${self:custom.config.${self:provider.stage}.cognitoUserPoolArn}
 putApiUrl:
   handler: src/handler.putApiUrl
   events:
@@ -35,7 +35,7 @@ putApiUrl:
         path: /teams/{teamId}/apiUrl
         method: PUT
         authorizer:
-          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+          arn: ${self:custom.config.${self:provider.stage}.cognitoUserPoolArn}
 postTestRequest:
   handler: src/handler.postTestRequest
   events:
@@ -43,7 +43,7 @@ postTestRequest:
         path: /teams/{teamId}/testRequests
         method: POST
         authorizer:
-          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+          arn: ${self:custom.config.${self:provider.stage}.cognitoUserPoolArn}
 getTestRequest:
   handler: src/handler.getTestRequest
   events:
@@ -65,7 +65,7 @@ preTokenGeneration:
   handler: src/handler.preTokenGeneration
   events:
     - cognitoUserPool:
-        pool: ${env:COGNITO_USER_POOL_NAME}
+        pool: ${self:custom.config.${self:provider.stage}.cognitoUserPoolName}
         trigger: PreTokenGeneration
         existing: true
 calculateScores:
@@ -82,7 +82,7 @@ getMessages:
         path: /messages
         method: GET
         authorizer:
-          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+          arn: ${self:custom.config.${self:provider.stage}.cognitoUserPoolArn}
 postMessage:
   handler: src/handler.postMessage
   events:
@@ -90,4 +90,10 @@ postMessage:
         path: /messages/create
         method: POST
         authorizer:
-          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+          arn: ${self:custom.config.${self:provider.stage}.cognitoUserPoolArn}
+getTests:
+  handler: src/handler.getTests
+  events:
+    - http:
+        path: /test
+        method: GET

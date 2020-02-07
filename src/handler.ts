@@ -8,12 +8,14 @@ import { TeamService } from "./service/team.service";
 import { TestExecutionService } from "./service/test-execution.service";
 import { TestToTestExecutionService } from "./service/test-to-test-execution.service";
 import { MessageService } from "./service/message.service";
+import { TestService } from "./service/test.service";
 
 const userService: UserService = ServiceFactory.get('user');
 const teamService: TeamService = ServiceFactory.get('team');
 const testExecutionService: TestExecutionService = ServiceFactory.get('testExecution');
 const testToTestExecutionService: TestToTestExecutionService = ServiceFactory.get('testToTestExecution');
 const messageService: MessageService = ServiceFactory.get('message');
+const testService: TestService = ServiceFactory.get('test')
 
 const getResults = async (event, context) => {
   try {
@@ -169,8 +171,17 @@ const deleteMessage = async (event, context) => {
     context.callbackWaitsForEmptyEventLoop = false;
     const email = getEmail(event);
     await userService.checkAccess(-1, email);
-    const messageId = event.pathParameters ? event.pathParameters.messageId : event; 
+    const messageId = event.pathParameters ? event.pathParameters.messageId : event;
     const response = await messageService.delete(messageId);
+    return responseHandler(response);
+  } catch (error) {
+    return errorHandler(error);
+  }
+}
+
+const getTests = async (event, context) => {
+  try {
+    const response = await testService.getAll();
     return responseHandler(response);
   } catch (error) {
     return errorHandler(error);
@@ -193,5 +204,6 @@ export {
   getMessages,
   postMessage,
   deleteMessage,
-  postMessageWithExpirationTime
+  postMessageWithExpirationTime,
+  getTests
 }

@@ -4,7 +4,7 @@ ttlMachine:
         path: /messages
         method: POST
         authorizer:
-          arn: arn:aws:cognito-idp:eu-west-1:745008152238:userpool/eu-west-1_VL4ON5eKr
+          arn: ${self:custom.config.${self:provider.stage}.cognitoUserPoolArn}
   definition:
     Comment: "Delete message after it expires"
     StartAt: FirstState
