@@ -35,9 +35,9 @@
         </md-card-actions>
 
         <md-card-actions class="md-layout-item md-size-20" md-alignment="right">
-          <label>SCORE: {{Number(team.score)}} </label>
+          <label>SCORE: {{Number(team.score)}}</label>
           <label v-show="team.executionNumber">Exec. no: {{Number(team.executionNumber)}}</label>
-          <md-button v-if="team.status==='ready'" @click="requestTest(team.id)">
+          <md-button v-if="team.status==='ready'" @click="requestTest(team)">
             <md-icon class="md-size-2x">play_arrow</md-icon>
           </md-button>
           <md-button v-if="team.status==='scheduled'">
@@ -115,8 +115,10 @@ export default {
     setApiUrl: function(team) {
       TeamService.putApiUrl(team.id, team.apiUrl);
     },
-    requestTest: function(teamId) {
-      TeamService.postTestRequest(teamId);
+    requestTest: function(team) {
+      TeamService.postTestRequest(team.id).then(() => {
+        Vue.set(team, "status", "scheduled");
+      });
     },
     getResultDetails: function(team) {
       if (team.showDetails) {

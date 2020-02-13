@@ -7,6 +7,7 @@ const getAllMessages = async () => {
 }
 
 const getNewMessages = async () => {
+	state.newMessages = [];
 	const response = await MessageService.getMessages();
 	response.data.forEach(m => {
 		try {

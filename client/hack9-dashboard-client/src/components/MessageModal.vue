@@ -1,13 +1,18 @@
 <template>
-  <md-dialog :md-active.sync="showOutput" :md-backdrop="false" :style="getStyle()">
-    <md-dialog-title>{{message.title}}</md-dialog-title>
+  <md-dialog
+    :md-active.sync="showOutput"
+    :md-backdrop="false"
+    :md-click-outside-to-close="false"
+    :md-close-on-esc="false"
+    :style="getStyle()"
+  >
+    <md-dialog-title>{{ message.title }}</md-dialog-title>
 
-    <md-dialog-content md-dynamic-height>
-      <p>{{message.content}}</p>
-    </md-dialog-content>
+    <md-dialog-content md-dynamic-width>{{message.createdBy}}</md-dialog-content>
+    <md-dialog-content md-dynamic-width>{{message.content}}</md-dialog-content>
 
     <md-dialog-actions>
-      <md-button class="md-primary" @click="close(message.id)">Close</md-button>
+      <md-button @click="close(message.id)">Close</md-button>
     </md-dialog-actions>
   </md-dialog>
 </template>
@@ -33,8 +38,9 @@ export default {
     getStyle: function() {
       return {
         position: "relative",
-        maxWidth: "768px",
-        maxHeight: "768px",
+        maxWidth: "400px",
+        maxHeight: "200px",
+        textOverflow: "visible"
       };
     }
   }

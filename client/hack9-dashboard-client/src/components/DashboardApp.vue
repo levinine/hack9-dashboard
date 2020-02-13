@@ -6,10 +6,10 @@
           <router-link to="/" class="md-layout-item md-size-60">
             <div class="md-title md-layout-item title">Hack9 leaderboard</div>
           </router-link>
-          <div class="md-caption md-size-20 md-layout-item md-size-10">
+          <div class="email-wrapper md-size-20 md-layout-item md-size-10">
             <div class="alert alert-info">{{userEmail}}</div>
           </div>
-          <div class="md-title md-size-15 md-layout-item" style="text-align: right">
+          <div class="link-wrapper md-size-15 md-layout-item" style="text-align: right">
             <div class="link-container">
               <router-link to="/messages" v-show="isUserAuthenticated">
                 <md-icon class="md-size-1x">mail_outline</md-icon>
@@ -28,9 +28,9 @@
             </div>
             <div class="link-container">
               <router-link
-                class="login-link"
-                :to="{ path: (isUserAuthenticated? '/logout': '/login') }"
-              >{{isUserAuthenticated? "Logout" : "Login"}}</router-link>
+                class="login-link md-size-5"
+                :to="{ path: (isUserAuthenticated ? '/logout': '/login') }"
+              >{{isUserAuthenticated ? "Logout" : "Login"}}</router-link>
             </div>
           </div>
         </div>
@@ -40,7 +40,7 @@
         <Spinner v-if="state.loading" />
         <router-view />
 
-        <div v-if="state.newMessages.length" class="modal-wrapper">
+        <div to="/messages" v-if="state.newMessages.length" class="modal-wrapper">
           <span v-for="message in state.newMessages" :key="message.id">
             <MessageModal :message="message" @close="closeMessage" />
           </span>
@@ -59,8 +59,10 @@ export default {
   name: "DashboardApp",
   components: { Spinner, MessageModal },
   mounted: function() {
-    store.getAllMessages();
-    setInterval(store.getNewMessages, 30000);
+    if (this.isUserAuthenticated) {
+      store.getAllMessages();
+      setInterval(store.getNewMessages, 30000);
+    }
   },
   data: function() {
     return {
@@ -123,6 +125,10 @@ export default {
 .login-link {
   font-size: 20px;
   color: aliceblue;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
 }
 .link-container {
   display: inline-block;
@@ -132,5 +138,11 @@ export default {
   position: relative;
   z-index: 9998;
   top: 0;
+}
+.link-wrapper {
+  display: inline-block;
+}
+.email-wrapper {
+  font-size: 14px;
 }
 </style>

@@ -21,7 +21,11 @@
     line-height: 50px;
 }
 .md-theme-default a:not(.md-button) {
-  color: aliceblue;
+  color: white;
+}
+.md-dialog-container{
+  background-color: #bdbbed;
 }
 
 @import "~vue-material/dist/components/MdToolbar/theme"; // Apply the Toolbar theme
+@import "~vue-material/dist/components/MdDialog/theme";

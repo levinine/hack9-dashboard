@@ -39,6 +39,6 @@ body,
 }
 .md-app-container {
   background: url(https://hack9-judge-thread.s3-eu-west-1.amazonaws.com/banner.jpg)
-    fixed right top;
+    no-repeat fixed right top / cover;
 }
 </style>
